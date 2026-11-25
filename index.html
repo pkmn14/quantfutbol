@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>QuantFutbol — Motor Predictivo Multi-Variable &amp; Value Bets</title>
+  <title>QuantFutbol — Dixon-Coles V2</title>
 
   <!-- Tailwind CSS via CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
 
-  <!-- Fuentes: Inter para UI y JetBrains Mono para métricas numéricas -->
+  <!-- Fuentes: Inter para interfaz y JetBrains Mono para métricas numéricas -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -24,9 +24,9 @@
           },
           colors: {
             terminal: {
-              bg: '#0b1120',
+              bg: '#0b0f19',
               card: '#111827',
-              elevated: '#182234',
+              elevated: '#161f32',
               border: '#1f2937',
             }
           }
@@ -36,9 +36,8 @@
   </script>
 
   <style>
-    /* Estilos base de terminal cuantitativa */
     body {
-      background-color: #0b1120;
+      background-color: #0b0f19;
       color: #e2e8f0;
       font-family: 'Inter', sans-serif;
     }
@@ -47,11 +46,11 @@
       font-variant-numeric: tabular-nums;
     }
 
-    /* Sliders personalizados */
+    /* Sliders estilo terminal */
     input[type="range"] {
       -webkit-appearance: none;
       appearance: none;
-      background: #1e293b;
+      background: #1f2937;
       height: 6px;
       border-radius: 9999px;
       outline: none;
@@ -65,7 +64,7 @@
       border-radius: 50%;
       background: #10b981;
       cursor: pointer;
-      border: 2px solid #0b1120;
+      border: 2px solid #0b0f19;
       box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.25);
       transition: transform 0.15s ease;
     }
@@ -80,16 +79,26 @@
       border-radius: 50%;
       background: #10b981;
       cursor: pointer;
-      border: 2px solid #0b1120;
+      border: 2px solid #0b0f19;
     }
 
-    /* Scrollbar sutil */
+    /* Quitar flechas nativas en inputs de cuotas editables */
+    input[type="number"].odd-input::-webkit-outer-spin-button,
+    input[type="number"].odd-input::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    input[type="number"].odd-input {
+      -moz-appearance: textfield;
+    }
+
+    /* Scrollbar oscuro discreto */
     ::-webkit-scrollbar {
-      width: 8px;
-      height: 8px;
+      width: 7px;
+      height: 7px;
     }
     ::-webkit-scrollbar-track {
-      background: #0b1120;
+      background: #0b0f19;
     }
     ::-webkit-scrollbar-thumb {
       background: #1f2937;
@@ -102,7 +111,7 @@
 </head>
 <body class="min-h-screen antialiased selection:bg-emerald-500/30 selection:text-emerald-200">
 
-  <!-- Overlay Drag & Drop para archivos JSON -->
+  <!-- Overlay Drag & Drop para soltar archivos .json -->
   <div id="dropOverlay" class="fixed inset-0 z-50 hidden bg-slate-950/90 backdrop-blur-sm border-4 border-dashed border-emerald-500/80 flex items-center justify-center p-6 pointer-events-none">
     <div class="text-center max-w-md">
       <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-emerald-500/15 border border-emerald-500/40 flex items-center justify-center text-emerald-400">
@@ -111,215 +120,241 @@
         </svg>
       </div>
       <h2 class="text-2xl font-bold text-white mb-2">Suelta tu archivo .JSON aquí</h2>
-      <p class="text-slate-400 text-sm">El motor recalculará automáticamente lambdas, matriz Dixon-Coles, Value Bets y Stakes de Kelly.</p>
+      <p class="text-slate-400 text-sm">Recálculo automático de lambdas, matriz Dixon-Coles, Value Bets y Stakes de Kelly.</p>
     </div>
   </div>
 
-  <!-- Notificaciones Toast -->
+  <!-- Contenedor de notificaciones Toast -->
   <div id="toastContainer" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none px-4 sm:px-0"></div>
 
   <!-- HEADER PRINCIPAL -->
-  <header class="sticky top-0 z-30 bg-[#0b1120]/95 backdrop-blur-md border-b border-slate-800/80">
+  <header class="sticky top-0 z-30 bg-[#0b0f19]/95 backdrop-blur-md border-b border-[#1f2937]">
     <div class="max-w-[1600px] mx-auto px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-3">
-      <!-- Marca -->
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-cyan-600 flex items-center justify-center shadow-lg shadow-emerald-500/20">
-          <svg class="w-6 h-6 text-slate-950" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"/>
-          </svg>
-        </div>
-        <div>
-          <div class="flex items-center gap-2">
-            <h1 class="text-lg sm:text-xl font-extrabold tracking-tight text-white">QuantFutbol</h1>
-            <span class="px-2 py-0.5 text-[10px] font-mono font-semibold uppercase tracking-wider rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">Dixon-Coles v2</span>
+
+      <!-- Identidad + Badge de estado LIVE / DEMO -->
+      <div class="flex flex-wrap items-center gap-3">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-500 to-sky-500 flex items-center justify-center shadow-lg shadow-emerald-500/20 flex-shrink-0">
+            <svg class="w-5 h-5 text-slate-950" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"/>
+            </svg>
           </div>
-          <p class="text-xs text-slate-400 hidden sm:block">Motor Predictivo Multi-Variable &amp; Detector de Value Bets</p>
+          <div>
+            <div class="flex items-center gap-2">
+              <h1 class="text-base sm:text-lg font-extrabold tracking-tight text-white">QuantFutbol</h1>
+              <span class="px-2 py-0.5 text-[10px] font-mono font-bold uppercase tracking-wider rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">Dixon-Coles V2</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Badge dinámico de origen de datos -->
+        <div id="dataSourceBadge" class="inline-flex items-center gap-2 px-2.5 py-1 rounded-full text-[11px] font-mono font-semibold bg-slate-800/90 text-slate-300 border border-slate-700">
+          <span class="w-2 h-2 rounded-full bg-slate-400 animate-pulse"></span>
+          <span>Cargando partidos_hoy.json...</span>
         </div>
       </div>
 
-      <!-- Botones de Gestión JSON -->
+      <!-- Acciones JSON y Calibración -->
       <div class="flex flex-wrap items-center gap-2">
         <input type="file" id="jsonFileInput" accept=".json,application/json" class="hidden" />
 
-        <button id="btnUploadJson" type="button" class="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-semibold text-xs sm:text-sm transition shadow-sm shadow-emerald-500/20 cursor-pointer">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+        <button id="btnReloadJson" type="button" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs transition shadow-sm shadow-emerald-500/20 cursor-pointer" title="Volver a descargar ./partidos_hoy.json">
+          <svg id="reloadIcon" class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+          </svg>
+          <span>Recargar JSON</span>
+        </button>
+
+        <button id="btnUploadJson" type="button" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[#111827] hover:bg-slate-800 text-slate-100 border border-[#1f2937] font-medium text-xs transition cursor-pointer">
+          <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
           </svg>
           <span>Subir JSON</span>
         </button>
 
-        <button id="btnEditJson" type="button" class="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-100 border border-slate-700 font-medium text-xs sm:text-sm transition cursor-pointer">
-          <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <button id="btnEditJson" type="button" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[#111827] hover:bg-slate-800 text-slate-100 border border-[#1f2937] font-medium text-xs transition cursor-pointer">
+          <svg class="w-3.5 h-3.5 text-sky-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
           </svg>
-          <span>Pegar / Editar JSON</span>
+          <span class="hidden sm:inline">Pegar / Editar JSON</span>
+          <span class="sm:hidden">Editar</span>
         </button>
 
-        <button id="btnDownloadTemplate" type="button" class="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-200 border border-slate-700/80 font-medium text-xs sm:text-sm transition cursor-pointer">
-          <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <button id="btnDownloadTemplate" type="button" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[#111827] hover:bg-slate-800 text-slate-200 border border-[#1f2937] font-medium text-xs transition cursor-pointer">
+          <svg class="w-3.5 h-3.5 text-amber-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
           </svg>
-          <span class="hidden sm:inline">Descargar Plantilla</span>
-          <span class="sm:hidden">Plantilla</span>
+          <span class="hidden md:inline">Descargar Plantilla</span>
+          <span class="md:hidden">Plantilla</span>
         </button>
 
-        <button id="btnToggleConfig" type="button" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-700 font-medium text-xs sm:text-sm transition cursor-pointer" title="Mostrar u ocultar calibración global">
-          <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <button id="btnToggleConfig" type="button" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 border border-[#1f2937] font-medium text-xs transition cursor-pointer" title="Mostrar u ocultar barra de parámetros">
+          <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/>
           </svg>
-          <span class="hidden md:inline">Calibración</span>
+          <span class="hidden lg:inline">Parámetros</span>
         </button>
       </div>
     </div>
 
-    <!-- BARRA DE CONFIGURACIÓN GLOBAL DEL MOTOR -->
-    <div id="globalConfigPanel" class="border-t border-slate-800/80 bg-[#0f172a]/90">
+    <!-- BARRA DE PARÁMETROS GLOBALES DEL MOTOR -->
+    <div id="globalConfigPanel" class="border-t border-[#1f2937] bg-[#0e1424]/95">
       <div class="max-w-[1600px] mx-auto px-4 sm:px-6 py-3.5">
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-7 gap-3 items-end">
-          <!-- Bankroll -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3 items-end">
+
+          <!-- Bankroll Total -->
           <div>
-            <label for="cfgBankroll" class="block text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1">Bankroll Total ($)</label>
-            <input id="cfgBankroll" type="number" min="1" step="50" value="1000" class="w-full px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-white font-mono text-sm focus:outline-none focus:border-emerald-500" />
+            <label for="cfgBankroll" class="block text-[10px] font-semibold uppercase tracking-wider text-slate-400 mb-1">Bankroll ($)</label>
+            <input id="cfgBankroll" type="number" min="1" step="50" value="1000" class="w-full px-2.5 py-1.5 rounded-lg bg-[#0b0f19] border border-[#1f2937] text-white font-mono text-xs sm:text-sm focus:outline-none focus:border-emerald-500" />
           </div>
 
           <!-- Fracción de Kelly -->
           <div>
-            <label for="cfgKelly" class="block text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1">Fracción de Kelly</label>
-            <select id="cfgKelly" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-white text-sm focus:outline-none focus:border-emerald-500">
-              <option value="1">Kelly Completo (1.0x)</option>
-              <option value="0.5">Medio Kelly (0.5x)</option>
-              <option value="0.25" selected>Cuarto de Kelly (0.25x)</option>
-              <option value="0.125">Octavo de Kelly (0.125x)</option>
+            <label for="cfgKelly" class="block text-[10px] font-semibold uppercase tracking-wider text-slate-400 mb-1">Fracción Kelly</label>
+            <select id="cfgKelly" class="w-full px-2 py-1.5 rounded-lg bg-[#0b0f19] border border-[#1f2937] text-white font-mono text-xs sm:text-sm focus:outline-none focus:border-emerald-500">
+              <option value="0.10">0.10x (Conserv.)</option>
+              <option value="0.25" selected>0.25x (Cuarto)</option>
+              <option value="0.50">0.50x (Medio)</option>
+              <option value="1.00">1.00x (Full)</option>
             </select>
           </div>
 
-          <!-- Umbral EV% -->
+          <!-- Umbral Mín. EV% -->
           <div>
-            <label for="cfgMinEv" class="block text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1">Umbral Mín. EV (%)</label>
-            <input id="cfgMinEv" type="number" min="0" max="50" step="0.5" value="3" class="w-full px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-emerald-400 font-mono text-sm focus:outline-none focus:border-emerald-500" />
+            <label for="cfgMinEv" class="block text-[10px] font-semibold uppercase tracking-wider text-slate-400 mb-1">Mín. EV (%)</label>
+            <input id="cfgMinEv" type="number" min="0" max="50" step="0.5" value="3.0" class="w-full px-2.5 py-1.5 rounded-lg bg-[#0b0f19] border border-[#1f2937] text-emerald-400 font-mono text-xs sm:text-sm focus:outline-none focus:border-emerald-500" />
           </div>
 
-          <!-- Peso xG vs Goles Reales -->
+          <!-- Filtro por Liga -->
+          <div>
+            <label for="cfgLeagueFilter" class="block text-[10px] font-semibold uppercase tracking-wider text-slate-400 mb-1">Filtro Liga</label>
+            <select id="cfgLeagueFilter" class="w-full px-2 py-1.5 rounded-lg bg-[#0b0f19] border border-[#1f2937] text-sky-300 text-xs sm:text-sm focus:outline-none focus:border-sky-400">
+              <option value="ALL">Todas las ligas</option>
+            </select>
+          </div>
+
+          <!-- Peso xG vs Goles -->
           <div>
             <div class="flex justify-between items-center mb-1">
-              <label for="cfgWeightXg" class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Peso xG vs Goles</label>
-              <span id="valWeightXg" class="text-xs font-mono text-emerald-400 font-semibold">65%</span>
+              <label for="cfgWeightXg" class="text-[10px] font-semibold uppercase tracking-wider text-slate-400">xG vs Goles</label>
+              <span id="valWeightXg" class="text-[11px] font-mono text-emerald-400 font-bold">65%</span>
             </div>
             <input id="cfgWeightXg" type="range" min="0" max="100" step="5" value="65" class="w-full" />
           </div>
 
-          <!-- Peso Forma Reciente -->
+          <!-- Peso Forma -->
           <div>
             <div class="flex justify-between items-center mb-1">
-              <label for="cfgWeightForm" class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Peso Forma (5p)</label>
-              <span id="valWeightForm" class="text-xs font-mono text-cyan-400 font-semibold">25%</span>
+              <label for="cfgWeightForm" class="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Peso Forma</label>
+              <span id="valWeightForm" class="text-[11px] font-mono text-sky-400 font-bold">25%</span>
             </div>
             <input id="cfgWeightForm" type="range" min="0" max="60" step="5" value="25" class="w-full" />
           </div>
 
-          <!-- Peso Consenso Pinnacle -->
+          <!-- Consenso Pinnacle -->
           <div>
             <div class="flex justify-between items-center mb-1">
-              <label for="cfgWeightPinnacle" class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Consenso Pinnacle</label>
-              <span id="valWeightPinnacle" class="text-xs font-mono text-amber-400 font-semibold">20%</span>
+              <label for="cfgWeightPinnacle" class="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Pinnacle %</label>
+              <span id="valWeightPinnacle" class="text-[11px] font-mono text-amber-400 font-bold">25%</span>
             </div>
-            <input id="cfgWeightPinnacle" type="range" min="0" max="60" step="5" value="20" class="w-full" />
+            <input id="cfgWeightPinnacle" type="range" min="0" max="70" step="5" value="25" class="w-full" />
           </div>
 
           <!-- Dixon-Coles Rho -->
           <div>
             <div class="flex justify-between items-center mb-1">
-              <label for="cfgRho" class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Dixon-Coles (ρ)</label>
-              <span id="valRho" class="text-xs font-mono text-purple-400 font-semibold">-0.10</span>
+              <label for="cfgRho" class="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Dixon-Coles ρ</label>
+              <span id="valRho" class="text-[11px] font-mono text-purple-400 font-bold">-0.10</span>
             </div>
-            <input id="cfgRho" type="range" min="-0.20" max="0.00" step="0.01" value="-0.10" class="w-full" />
+            <input id="cfgRho" type="range" min="-0.20" max="0.10" step="0.01" value="-0.10" class="w-full" />
           </div>
+
         </div>
       </div>
     </div>
   </header>
 
   <!-- CONTENIDO PRINCIPAL -->
-  <main class="max-w-[1600px] mx-auto px-4 sm:px-6 py-6 space-y-6">
+  <main class="max-w-[1600px] mx-auto px-4 sm:px-6 py-5 space-y-6">
 
-    <!-- VISTA 1: RADAR DE VALUE BETS (ESCANEO GLOBAL) -->
-    <section class="rounded-2xl bg-[#111827] border border-slate-800 shadow-xl overflow-hidden">
-      <div class="px-5 py-4 border-b border-slate-800 flex flex-wrap items-center justify-between gap-3">
+    <!-- SECCIÓN 1: RADAR GLOBAL DE VALUE BETS (+EV) -->
+    <section class="rounded-2xl bg-[#111827] border border-[#1f2937] shadow-xl overflow-hidden">
+      <div class="px-5 py-4 border-b border-[#1f2937] flex flex-wrap items-center justify-between gap-3">
         <div class="flex items-center gap-3">
-          <div class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></div>
+          <div class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse flex-shrink-0"></div>
           <div>
             <h2 class="text-base sm:text-lg font-bold text-white">Radar Global de Value Bets (+EV)</h2>
-            <p class="text-xs text-slate-400">Escaneo automático de todos los partidos del JSON ordenados por mayor Valor Esperado. Haz clic en una fila para auditar el partido.</p>
+            <p class="text-xs text-slate-400">Ordenado de mayor a menor Valor Esperado. Haz clic en una fila para auditar el partido completo.</p>
           </div>
         </div>
 
-        <!-- KPIs rápidos -->
-        <div class="flex flex-wrap items-center gap-2 sm:gap-3">
-          <div class="px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-xs">
+        <!-- KPIs Resumen -->
+        <div class="flex flex-wrap items-center gap-2">
+          <div class="px-3 py-1.5 rounded-xl bg-[#0b0f19] border border-[#1f2937] text-xs">
             <span class="text-slate-400">Partidos:</span>
-            <span id="kpiTotalMatches" class="ml-1 font-mono font-bold text-white">0</span>
+            <span id="kpiTotalMatches" class="ml-1 font-mono font-bold text-white tabular-nums">0</span>
           </div>
           <div class="px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-xs">
             <span class="text-emerald-300">Value Bets:</span>
-            <span id="kpiValueBets" class="ml-1 font-mono font-bold text-emerald-400">0</span>
+            <span id="kpiValueBets" class="ml-1 font-mono font-bold text-emerald-400 tabular-nums">0</span>
           </div>
-          <div class="px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-xs">
+          <div class="px-3 py-1.5 rounded-xl bg-[#0b0f19] border border-[#1f2937] text-xs">
             <span class="text-slate-400">Stake Total:</span>
-            <span id="kpiTotalStake" class="ml-1 font-mono font-bold text-amber-400">$0.00</span>
+            <span id="kpiTotalStake" class="ml-1 font-mono font-bold text-amber-400 tabular-nums">$0.00</span>
           </div>
         </div>
       </div>
 
-      <!-- Tabla Radar -->
       <div class="overflow-x-auto">
-        <table class="w-full text-left border-collapse">
+        <table class="w-full text-left border-collapse min-w-[740px]">
           <thead>
-            <tr class="bg-slate-900/70 text-[11px] font-semibold uppercase tracking-wider text-slate-400 border-b border-slate-800">
-              <th class="py-3 px-4">Partido / Liga</th>
-              <th class="py-3 px-4">Mercado</th>
-              <th class="py-3 px-4 text-right">Prob. Modelo</th>
-              <th class="py-3 px-4 text-right">Cuota Justa</th>
-              <th class="py-3 px-4 text-right">Cuota Casa</th>
-              <th class="py-3 px-4 text-right">EV %</th>
-              <th class="py-3 px-4 text-right">Kelly %</th>
+            <tr class="bg-[#0b0f19]/70 text-[11px] font-semibold uppercase tracking-wider text-slate-400 border-b border-[#1f2937]">
+              <th class="py-3 px-4">Partido / Liga / Fecha</th>
+              <th class="py-3 px-3">Mercado</th>
+              <th class="py-3 px-3 text-right">Prob. Modelo</th>
+              <th class="py-3 px-3 text-right">Cuota Justa</th>
+              <th class="py-3 px-3 text-right">Cuota Casa</th>
+              <th class="py-3 px-3 text-right">EV %</th>
+              <th class="py-3 px-3 text-right">Kelly %</th>
               <th class="py-3 px-4 text-right">Stake Sugerido</th>
             </tr>
           </thead>
-          <tbody id="radarTableBody" class="divide-y divide-slate-800/70 text-sm">
+          <tbody id="radarTableBody" class="divide-y divide-[#1f2937]/80 text-sm">
             <!-- Renderizado dinámico -->
           </tbody>
         </table>
       </div>
     </section>
 
-    <!-- VISTA 2: SELECTOR DE PARTIDOS + PANEL DE ANÁLISIS PROFUNDO -->
+    <!-- SECCIÓN 2 + SECCIÓN 3: SELECTOR DE PARTIDOS + AUDITORÍA PROFUNDA -->
     <section class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
 
-      <!-- COLUMNA IZQUIERDA: LISTA DE PARTIDOS -->
+      <!-- SECCIÓN 2: SELECTOR DE PARTIDOS -->
       <aside class="lg:col-span-4 xl:col-span-3 space-y-3">
         <div class="flex items-center justify-between px-1">
-          <h3 class="text-sm font-bold uppercase tracking-wider text-slate-300">Partidos Cargados</h3>
-          <span class="text-xs text-slate-500 font-mono" id="matchCountBadge">0 eventos</span>
+          <h3 class="text-xs font-bold uppercase tracking-wider text-slate-300">Selector de Partidos</h3>
+          <span id="matchCountBadge" class="text-xs text-slate-400 font-mono">0 eventos</span>
         </div>
-        <div id="matchListContainer" class="space-y-2.5 max-h-[820px] overflow-y-auto pr-1">
+        <div id="matchListContainer" class="space-y-2 max-h-[880px] overflow-y-auto pr-1">
           <!-- Tarjetas de partidos generadas por JS -->
         </div>
       </aside>
 
-      <!-- COLUMNA DERECHA: PANEL DE ANÁLISIS PROFUNDO -->
+      <!-- SECCIÓN 3: AUDITORÍA PROFUNDA DEL PARTIDO -->
       <div id="deepAnalysisPanel" class="lg:col-span-8 xl:col-span-9 space-y-6">
-        <!-- Contenido dinámico del partido seleccionado -->
+        <!-- Renderizado dinámico -->
       </div>
     </section>
+
   </main>
 
   <!-- MODAL: PEGAR / EDITAR JSON EN VIVO -->
-  <div id="jsonModal" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+  <div id="jsonModal" class="fixed inset-0 z-50 hidden bg-slate-950/85 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="bg-[#111827] border border-slate-700 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden">
-      <div class="px-5 py-4 border-b border-slate-800 flex items-center justify-between">
+      <div class="px-5 py-4 border-b border-[#1f2937] flex items-center justify-between">
         <div>
           <h3 class="text-base sm:text-lg font-bold text-white">Editor JSON en Vivo</h3>
-          <p class="text-xs text-slate-400">Pega aquí el JSON generado por tu script de Python/APIs o edita cualquier variable para recalcular al instante.</p>
+          <p class="text-xs text-slate-400">Compatible con el esquema exacto de <code class="text-emerald-400">partidos_hoy.json</code> generado por <code class="text-sky-400">recolector.py</code>.</p>
         </div>
         <button id="btnCloseModal" type="button" class="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition cursor-pointer">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -330,11 +365,11 @@
 
       <div class="p-4 flex-1 overflow-hidden flex flex-col gap-3">
         <div id="jsonErrorBox" class="hidden px-3 py-2 rounded-xl bg-red-500/15 border border-red-500/40 text-red-300 text-xs font-mono"></div>
-        <textarea id="jsonEditorTextarea" spellcheck="false" class="w-full flex-1 min-h-[360px] p-4 rounded-xl bg-[#0b1120] border border-slate-700 text-emerald-300 font-mono text-xs leading-relaxed focus:outline-none focus:border-emerald-500 resize-none"></textarea>
+        <textarea id="jsonEditorTextarea" spellcheck="false" class="w-full flex-1 min-h-[360px] p-4 rounded-xl bg-[#0b0f19] border border-[#1f2937] text-emerald-300 font-mono text-xs leading-relaxed focus:outline-none focus:border-emerald-500 resize-none"></textarea>
       </div>
 
-      <div class="px-5 py-3.5 border-t border-slate-800 bg-slate-900/50 flex flex-wrap items-center justify-between gap-2">
-        <div class="flex items-center gap-2">
+      <div class="px-5 py-3.5 border-t border-[#1f2937] bg-[#0e1424] flex flex-wrap items-center justify-between gap-2">
+        <div class="flex flex-wrap items-center gap-2">
           <button id="btnCopyJson" type="button" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-medium transition cursor-pointer">
             Copiar JSON
           </button>
@@ -342,7 +377,7 @@
             Formatear
           </button>
           <button id="btnResetDemo" type="button" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700 text-xs font-medium transition cursor-pointer">
-            Restaurar Demo
+            Cargar Demo
           </button>
         </div>
         <div class="flex items-center gap-2">
@@ -358,280 +393,239 @@
   </div>
 
   <!-- ========================================================================= -->
-  <!-- MOTOR MATEMÁTICO Y LÓGICA DE LA APLICACIÓN (JAVASCRIPT PURO)              -->
+  <!-- MOTOR MATEMÁTICO POISSON + DIXON-COLES & CONTROLADOR DE INTERFAZ          -->
   <!-- ========================================================================= -->
   <script>
     /***************************************************************************
-     * 1. DATOS DE EJEMPLO REALISTAS (4 PARTIDOS COMPLETOS)
+     * 1. DATOS DEMO (MISMO ESQUEMA EXACTO QUE partidos_hoy.json DE recolector.py)
      ***************************************************************************/
-    const DEFAULT_MATCHES = [
-      {
-        id: "LALIGA-2026-RM-FCB",
-        liga: "LaLiga EA Sports",
-        fecha: "2026-11-28 21:00",
-        local: "Real Madrid",
-        visitante: "FC Barcelona",
-        promedioLigaLocal: 1.54,
-        promedioLigaVisita: 1.16,
-        equipoLocal: {
-          golesFavor: 2.35,
-          golesContra: 0.85,
-          xG: 2.28,
-          xGA: 0.92,
-          formaXG: 2.42,
-          formaXGA: 0.88,
-          elo: 1995,
-          bajasAtaquePct: 0,
-          bajasDefensaPct: 5,
-          listaBajas: "Carvajal (lesión rodilla, +5% def)",
-          diasDescanso: 5
+    const DEMO_PAYLOAD = {
+      updatedAt: "2026-11-25T22:51:27.073696+00:00",
+      date: "2026-11-25",
+      matches: [
+        {
+          id: "demo-arg-boca-ind",
+          league: "Liga Profesional Argentina",
+          date: "2026-11-26T00:00:00Z",
+          homeTeam: "Boca Juniors",
+          awayTeam: "Independiente Rivadavia",
+          stats: {
+            homeGoalsFor: 1.62,
+            homeGoalsAgainst: 0.81,
+            homeXG: 1.62,
+            homeXGA: 0.81,
+            awayGoalsFor: 1.15,
+            awayGoalsAgainst: 1.62,
+            awayXG: 1.15,
+            awayXGA: 1.62,
+            leagueAvgHome: 1.28,
+            leagueAvgAway: 0.94
+          },
+          context: {
+            homeElo: 1645,
+            awayElo: 1537,
+            homeForm: "WLDWW",
+            awayForm: "LDWLL",
+            homeFormScore: 0.67,
+            awayFormScore: 0.33,
+            homeRestDays: 5,
+            awayRestDays: 4,
+            homeInjuryImpact: 0.0,
+            awayInjuryImpact: 0.0,
+            homeInjuriesList: [],
+            awayInjuriesList: [],
+            weatherFactor: 1.0
+          },
+          odds: {
+            home: 1.44,
+            draw: 4.80,
+            away: 10.00,
+            over25: 2.04,
+            under25: 1.85,
+            btts_yes: 0,
+            btts_no: 0,
+            pinnacle_home: 1.43,
+            pinnacle_draw: 4.72,
+            pinnacle_away: 8.19
+          }
         },
-        equipoVisita: {
-          golesFavor: 1.95,
-          golesContra: 1.18,
-          xG: 1.92,
-          xGA: 1.24,
-          formaXG: 1.85,
-          formaXGA: 1.32,
-          elo: 1938,
-          bajasAtaquePct: -8,
-          bajasDefensaPct: 6,
-          listaBajas: "Araujo (central, +6% def), Dani Olmo (duda, -8% atk)",
-          diasDescanso: 3
+        {
+          id: "demo-bra-cor-fla",
+          league: "Brasileirão Serie A",
+          date: "2026-11-29T19:00:00Z",
+          homeTeam: "Coritiba",
+          awayTeam: "Flamengo",
+          stats: {
+            homeGoalsFor: 1.17,
+            homeGoalsAgainst: 1.18,
+            homeXG: 1.17,
+            homeXGA: 1.18,
+            awayGoalsFor: 1.96,
+            awayGoalsAgainst: 1.08,
+            awayXG: 1.96,
+            awayXGA: 1.08,
+            leagueAvgHome: 1.48,
+            leagueAvgAway: 1.02
+          },
+          context: {
+            homeElo: 1510,
+            awayElo: 1689,
+            homeForm: "LWLLW",
+            awayForm: "WWWWD",
+            homeFormScore: 0.40,
+            awayFormScore: 0.87,
+            homeRestDays: 7,
+            awayRestDays: 7,
+            homeInjuryImpact: 0.0,
+            awayInjuryImpact: 0.0,
+            homeInjuriesList: [],
+            awayInjuriesList: [],
+            weatherFactor: 1.0
+          },
+          odds: {
+            home: 4.60,
+            draw: 4.45,
+            away: 1.76,
+            over25: 1.75,
+            under25: 2.15,
+            btts_yes: 0,
+            btts_no: 0,
+            pinnacle_home: 3.95,
+            pinnacle_draw: 4.44,
+            pinnacle_away: 1.76
+          }
         },
-        contexto: {
-          clima: "Despejado, 14°C — Césped rápido",
-          modificadorGoles: 0.02,
-          motivacionLocal: 6,
-          motivacionVisita: 6
+        {
+          id: "demo-epl-eve-liv",
+          league: "Premier League",
+          date: "2026-11-29T12:00:00Z",
+          homeTeam: "Everton",
+          awayTeam: "Liverpool",
+          stats: {
+            homeGoalsFor: 1.47,
+            homeGoalsAgainst: 1.25,
+            homeXG: 1.47,
+            homeXGA: 1.25,
+            awayGoalsFor: 1.75,
+            awayGoalsAgainst: 1.07,
+            awayXG: 1.75,
+            awayXGA: 1.07,
+            leagueAvgHome: 1.62,
+            leagueAvgAway: 1.32
+          },
+          context: {
+            homeElo: 1539,
+            awayElo: 1632,
+            homeForm: "LLWWL",
+            awayForm: "WWLWW",
+            homeFormScore: 0.40,
+            awayFormScore: 0.80,
+            homeRestDays: 5,
+            awayRestDays: 6,
+            homeInjuryImpact: 0.0,
+            awayInjuryImpact: 0.0,
+            homeInjuriesList: [],
+            awayInjuriesList: [],
+            weatherFactor: 0.96
+          },
+          odds: {
+            home: 4.60,
+            draw: 4.06,
+            away: 1.91,
+            over25: 1.75,
+            under25: 2.30,
+            btts_yes: 0,
+            btts_no: 0,
+            pinnacle_home: 4.41,
+            pinnacle_draw: 3.72,
+            pinnacle_away: 1.86
+          }
         },
-        cuotas: {
-          local: 1.95,
-          empate: 3.90,
-          visita: 3.65,
-          over15: 1.20,
-          over25: 1.68,
-          under25: 2.20,
-          under35: 1.55,
-          bttsSi: 1.62,
-          bttsNo: 2.30
-        },
-        cuotasPinnacle: {
-          local: 1.88,
-          empate: 3.95,
-          visita: 3.85
+        {
+          id: "demo-lib-pal-est",
+          league: "Copa Libertadores",
+          date: "2026-11-28T20:00:00Z",
+          homeTeam: "Palmeiras-SP",
+          awayTeam: "Estudiantes La Plata",
+          stats: {
+            homeGoalsFor: 1.82,
+            homeGoalsAgainst: 0.78,
+            homeXG: 1.82,
+            homeXGA: 0.78,
+            awayGoalsFor: 0.88,
+            awayGoalsAgainst: 1.13,
+            awayXG: 0.88,
+            awayXGA: 1.13,
+            leagueAvgHome: 1.50,
+            leagueAvgAway: 0.95
+          },
+          context: {
+            homeElo: 1628,
+            awayElo: 1560,
+            homeForm: "WWDWW",
+            awayForm: "DLWDL",
+            homeFormScore: 0.87,
+            awayFormScore: 0.40,
+            homeRestDays: 5,
+            awayRestDays: 3,
+            homeInjuryImpact: 2.5,
+            awayInjuryImpact: 5.0,
+            homeInjuriesList: [],
+            awayInjuriesList: [],
+            weatherFactor: 1.0
+          },
+          odds: {
+            home: 2.08,
+            draw: 3.18,
+            away: 4.70,
+            over25: 2.73,
+            under25: 1.44,
+            btts_yes: 0,
+            btts_no: 0,
+            pinnacle_home: 2.07,
+            pinnacle_draw: 2.90,
+            pinnacle_away: 4.42
+          }
         }
-      },
-      {
-        id: "EPL-2026-MCI-ARS",
-        liga: "Premier League",
-        fecha: "2026-11-29 17:30",
-        local: "Manchester City",
-        visitante: "Arsenal",
-        promedioLigaLocal: 1.62,
-        promedioLigaVisita: 1.28,
-        equipoLocal: {
-          golesFavor: 2.20,
-          golesContra: 0.88,
-          xG: 2.15,
-          xGA: 0.84,
-          formaXG: 2.05,
-          formaXGA: 0.90,
-          elo: 2020,
-          bajasAtaquePct: -4,
-          bajasDefensaPct: 0,
-          listaBajas: "De Bruyne (rotación, -4% atk)",
-          diasDescanso: 4
-        },
-        equipoVisita: {
-          golesFavor: 1.68,
-          golesContra: 0.82,
-          xG: 1.58,
-          xGA: 0.88,
-          formaXG: 1.48,
-          formaXGA: 0.85,
-          elo: 1965,
-          bajasAtaquePct: -10,
-          bajasDefensaPct: 0,
-          listaBajas: "Saka (sobrecarga muscular, -10% atk)",
-          diasDescanso: 3
-        },
-        contexto: {
-          clima: "Lluvia fuerte y viento 32 km/h, 7°C",
-          modificadorGoles: -0.08,
-          motivacionLocal: 5,
-          motivacionVisita: 4
-        },
-        cuotas: {
-          local: 2.02,
-          empate: 3.45,
-          visita: 3.80,
-          over15: 1.32,
-          over25: 1.98,
-          under25: 1.92,
-          under35: 1.34,
-          bttsSi: 1.86,
-          bttsNo: 1.98
-        },
-        cuotasPinnacle: {
-          local: 1.92,
-          empate: 3.55,
-          visita: 4.10
-        }
-      },
-      {
-        id: "SERIEA-2026-INT-MIL",
-        liga: "Serie A",
-        fecha: "2026-11-29 20:45",
-        local: "Inter de Milán",
-        visitante: "AC Milan",
-        promedioLigaLocal: 1.46,
-        promedioLigaVisita: 1.12,
-        equipoLocal: {
-          golesFavor: 2.10,
-          golesContra: 0.72,
-          xG: 2.04,
-          xGA: 0.78,
-          formaXG: 2.18,
-          formaXGA: 0.74,
-          elo: 1945,
-          bajasAtaquePct: 0,
-          bajasDefensaPct: 0,
-          listaBajas: "Plantilla completa disponible",
-          diasDescanso: 5
-        },
-        equipoVisita: {
-          golesFavor: 1.48,
-          golesContra: 1.25,
-          xG: 1.42,
-          xGA: 1.30,
-          formaXG: 1.36,
-          formaXGA: 1.38,
-          elo: 1850,
-          bajasAtaquePct: -5,
-          bajasDefensaPct: 9,
-          listaBajas: "Tomori (suspendido, +9% def), Pulisic (duda, -5% atk)",
-          diasDescanso: 4
-        },
-        contexto: {
-          clima: "Nublado, 9°C — San Siro lleno",
-          modificadorGoles: 0.00,
-          motivacionLocal: 5,
-          motivacionVisita: 5
-        },
-        cuotas: {
-          local: 1.78,
-          empate: 3.75,
-          visita: 4.60,
-          over15: 1.26,
-          over25: 1.84,
-          under25: 2.02,
-          under35: 1.38,
-          bttsSi: 1.80,
-          bttsNo: 2.08
-        },
-        cuotasPinnacle: {
-          local: 1.70,
-          empate: 3.85,
-          visita: 5.10
-        }
-      },
-      {
-        id: "LIBERTADORES-2026-FLA-RIV",
-        liga: "Copa Libertadores",
-        fecha: "2026-11-30 21:30",
-        local: "Flamengo",
-        visitante: "River Plate",
-        promedioLigaLocal: 1.52,
-        promedioLigaVisita: 1.02,
-        equipoLocal: {
-          golesFavor: 2.18,
-          golesContra: 0.90,
-          xG: 2.12,
-          xGA: 0.95,
-          formaXG: 2.25,
-          formaXGA: 0.92,
-          elo: 1825,
-          bajasAtaquePct: -4,
-          bajasDefensaPct: 0,
-          listaBajas: "Cebolinha (lesión muscular, -4% atk)",
-          diasDescanso: 6
-        },
-        equipoVisita: {
-          golesFavor: 1.22,
-          golesContra: 1.18,
-          xG: 1.25,
-          xGA: 1.22,
-          formaXG: 1.18,
-          formaXGA: 1.28,
-          elo: 1765,
-          bajasAtaquePct: -6,
-          bajasDefensaPct: 4,
-          listaBajas: "Borja (fatiga, -6% atk), Acuña (+4% def)",
-          diasDescanso: 3
-        },
-        contexto: {
-          clima: "Húmedo, 26°C — Maracaná a tope",
-          modificadorGoles: 0.03,
-          motivacionLocal: 8,
-          motivacionVisita: 6
-        },
-        cuotas: {
-          local: 1.82,
-          empate: 3.60,
-          visita: 4.50,
-          over15: 1.28,
-          over25: 1.95,
-          under25: 1.88,
-          under35: 1.32,
-          bttsSi: 1.92,
-          bttsNo: 1.90
-        },
-        cuotasPinnacle: {
-          local: 1.72,
-          empate: 3.70,
-          visita: 5.05
-        }
-      }
-    ];
+      ]
+    };
 
     /***************************************************************************
      * 2. ESTADO GLOBAL DE LA APLICACIÓN
      ***************************************************************************/
     const state = {
-      matches: JSON.parse(JSON.stringify(DEFAULT_MATCHES)),
-      selectedMatchId: DEFAULT_MATCHES[0].id,
+      sourceMode: "loading", // "live" | "demo" | "manual"
+      updatedAt: null,
+      rawPayload: null,
+      matches: [],
+      selectedMatchId: null,
+      leagueFilter: "ALL",
       config: {
         bankroll: 1000,
         kellyFraction: 0.25,
         minEvPct: 3.0,
         weightXg: 0.65,
         weightForm: 0.25,
-        weightPinnacle: 0.20,
+        weightPinnacle: 0.25,
         rho: -0.10
       },
-      // Simulaciones "What-If" en memoria por ID de partido (sin mutar el JSON original)
-      whatIfByMatch: {}
+      // Ajustes What-If por ID de partido (sin mutar el JSON original)
+      whatIfByMatch: {},
+      // Cuotas editadas manualmente por el usuario en la tabla de mercados
+      customOddsByMatch: {}
     };
 
     /***************************************************************************
      * 3. FUNCIONES MATEMÁTICAS: POISSON, DIXON-COLES, DEVIG & KELLY
      ***************************************************************************/
-
-    // Precalcular factoriales de 0 a 10 para máxima velocidad
     const FACTORIALS = [1, 1, 2, 6, 24, 120, 720, 5040, 40320, 362880, 3628800];
+    const MAX_KELLY_CAP_PCT = 15.0; // Tope de seguridad: máx. 15% del bankroll por apuesta
 
-    /**
-     * Probabilidad exacta de Poisson P(X = k; lambda)
-     */
     function poissonPmf(k, lambda) {
       if (lambda <= 0) return k === 0 ? 1 : 0;
       return (Math.pow(lambda, k) * Math.exp(-lambda)) / FACTORIALS[k];
     }
 
-    /**
-     * Factor de corrección tau de Dixon-Coles para marcadores bajos (0-0, 1-0, 0-1, 1-1)
-     */
     function dixonColesTau(x, y, lambdaH, lambdaA, rho) {
       let tau = 1.0;
       if (x === 0 && y === 0) {
@@ -646,206 +640,252 @@
       return Math.max(0.01, tau);
     }
 
+    function isValidOdd(val) {
+      return typeof val === "number" && !Number.isNaN(val) && val > 1.01;
+    }
+
     /**
-     * Elimina el margen (vig/overround) de Pinnacle de forma proporcional
+     * Elimina el margen (vig) de Pinnacle solo cuando las 3 cuotas 1X2 son > 1.01
      */
-    function devigPinnacle(pinOdds) {
-      if (!pinOdds || !pinOdds.local || !pinOdds.empate || !pinOdds.visita) return null;
-      const pH = 1 / pinOdds.local;
-      const pD = 1 / pinOdds.empate;
-      const pA = 1 / pinOdds.visita;
+    function devigPinnacle(oddsObj) {
+      if (!oddsObj) return null;
+      const h = Number(oddsObj.pinnacle_home);
+      const d = Number(oddsObj.pinnacle_draw);
+      const a = Number(oddsObj.pinnacle_away);
+      if (!isValidOdd(h) || !isValidOdd(d) || !isValidOdd(a)) return null;
+
+      const pH = 1 / h;
+      const pD = 1 / d;
+      const pA = 1 / a;
       const sum = pH + pD + pA;
       if (sum <= 0) return null;
+
       return {
-        local: pH / sum,
-        empate: pD / sum,
-        visita: pA / sum,
+        home: pH / sum,
+        draw: pD / sum,
+        away: pA / sum,
         vigPct: (sum - 1) * 100
       };
     }
 
     /**
-     * Obtiene los ajustes What-If actuales para un partido
+     * Obtiene o inicializa el estado What-If de un partido a partir de sus valores base
      */
-    function getWhatIf(matchId) {
-      if (!state.whatIfByMatch[matchId]) {
-        state.whatIfByMatch[matchId] = { atkH: 0, atkA: 0, clima: 0 };
+    function getWhatIf(match) {
+      const ctx = match.context || {};
+      if (!state.whatIfByMatch[match.id]) {
+        state.whatIfByMatch[match.id] = {
+          injHome: Number(ctx.homeInjuryImpact) || 0,
+          injAway: Number(ctx.awayInjuryImpact) || 0,
+          motHome: 0,
+          motAway: 0,
+          weather: typeof ctx.weatherFactor === "number" ? ctx.weatherFactor : 1.0
+        };
       }
-      return state.whatIfByMatch[matchId];
+      return state.whatIfByMatch[match.id];
+    }
+
+    function isWhatIfModified(match) {
+      const wi = getWhatIf(match);
+      const ctx = match.context || {};
+      const baseInjH = Number(ctx.homeInjuryImpact) || 0;
+      const baseInjA = Number(ctx.awayInjuryImpact) || 0;
+      const baseWeather = typeof ctx.weatherFactor === "number" ? ctx.weatherFactor : 1.0;
+      return (
+        Math.abs(wi.injHome - baseInjH) > 0.01 ||
+        Math.abs(wi.injAway - baseInjA) > 0.01 ||
+        wi.motHome !== 0 ||
+        wi.motAway !== 0 ||
+        Math.abs(wi.weather - baseWeather) > 0.005
+      );
     }
 
     /**
-     * Motor principal de análisis para un partido
+     * Obtiene la cuota vigente para un mercado (prioriza edición manual del usuario si existe)
+     */
+    function getEffectiveOdd(match, key) {
+      const custom = state.customOddsByMatch[match.id];
+      if (custom && Object.prototype.hasOwnProperty.call(custom, key)) {
+        return custom[key];
+      }
+      const base = match.odds ? Number(match.odds[key]) : 0;
+      return isValidOdd(base) ? base : 0;
+    }
+
+    /**
+     * Motor predictivo completo para un partido
      */
     function analyzeMatch(match) {
       const cfg = state.config;
-      const h = match.equipoLocal;
-      const a = match.equipoVisita;
-      const ctx = match.contexto || { clima: "Sin datos", modificadorGoles: 0, motivacionLocal: 0, motivacionVisita: 0 };
-      const wi = getWhatIf(match.id);
+      const s = match.stats || {};
+      const ctx = match.context || {};
+      const wi = getWhatIf(match);
 
-      const avgH = Math.max(0.5, Number(match.promedioLigaLocal) || 1.50);
-      const avgA = Math.max(0.5, Number(match.promedioLigaVisita) || 1.15);
+      const avgH = Math.max(0.5, Number(s.leagueAvgHome) || 1.50);
+      const avgA = Math.max(0.5, Number(s.leagueAvgAway) || 1.15);
 
-      // 1. Mezcla xG vs Goles Reales
-      const baseAtkH = cfg.weightXg * h.xG + (1 - cfg.weightXg) * h.golesFavor;
-      const baseDefH = cfg.weightXg * h.xGA + (1 - cfg.weightXg) * h.golesContra;
-      const baseAtkA = cfg.weightXg * a.xG + (1 - cfg.weightXg) * a.golesFavor;
-      const baseDefA = cfg.weightXg * a.xGA + (1 - cfg.weightXg) * a.golesContra;
+      // 1. Goles base combinados según slider "Peso xG vs Goles"
+      const hGF = Number(s.homeGoalsFor) || avgH;
+      const hGA = Number(s.homeGoalsAgainst) || avgA;
+      const hXG = Number(s.homeXG) || hGF;
+      const hXGA = Number(s.homeXGA) || hGA;
 
-      // 2. Ponderación con Forma Reciente (últimos 5 partidos)
-      const effAtkH = (1 - cfg.weightForm) * baseAtkH + cfg.weightForm * (h.formaXG ?? baseAtkH);
-      const effDefH = (1 - cfg.weightForm) * baseDefH + cfg.weightForm * (h.formaXGA ?? baseDefH);
-      const effAtkA = (1 - cfg.weightForm) * baseAtkA + cfg.weightForm * (a.formaXG ?? baseAtkA);
-      const effDefA = (1 - cfg.weightForm) * baseDefA + cfg.weightForm * (a.formaXGA ?? baseDefA);
+      const aGF = Number(s.awayGoalsFor) || avgA;
+      const aGA = Number(s.awayGoalsAgainst) || avgH;
+      const aXG = Number(s.awayXG) || aGF;
+      const aXGA = Number(s.awayXGA) || aGA;
 
-      // 3. Fuerza relativa de ataque y defensa frente a promedios de liga
-      const strAtkH = effAtkH / avgH;
-      const strDefH = effDefH / avgA;
-      const strAtkA = effAtkA / avgA;
-      const strDefA = effDefA / avgH;
+      const baseAtkH = cfg.weightXg * hXG + (1 - cfg.weightXg) * hGF;
+      const baseDefH = cfg.weightXg * hXGA + (1 - cfg.weightXg) * hGA;
+      const baseAtkA = cfg.weightXg * aXG + (1 - cfg.weightXg) * aGF;
+      const baseDefA = cfg.weightXg * aXGA + (1 - cfg.weightXg) * aGA;
 
-      let lambdaH = strAtkH * strDefA * avgH;
-      let lambdaA = strAtkA * strDefH * avgA;
+      // 2. Fuerza relativa de ataque y defensa frente al promedio de la liga
+      let lambdaH = (baseAtkH / avgH) * (baseDefA / avgH) * avgH;
+      let lambdaA = (baseAtkA / avgA) * (baseDefH / avgA) * avgA;
 
-      // 4. Ajuste por Diferencial Elo
-      const eloDiff = (h.elo || 1500) - (a.elo || 1500);
-      const factorEloH = Math.max(0.5, 1 + (eloDiff / 400) * 0.15);
-      const factorEloA = Math.max(0.5, 1 - (eloDiff / 400) * 0.15);
-      lambdaH *= factorEloH;
-      lambdaA *= factorEloA;
+      // 3. Ajuste por Forma Reciente (homeFormScore / awayFormScore vs 0.50)
+      const formH = typeof ctx.homeFormScore === "number" ? ctx.homeFormScore : 0.50;
+      const formA = typeof ctx.awayFormScore === "number" ? ctx.awayFormScore : 0.50;
+      lambdaH *= Math.max(0.65, 1 + (formH - 0.50) * cfg.weightForm);
+      lambdaA *= Math.max(0.65, 1 + (formA - 0.50) * cfg.weightForm);
 
-      // 5. Penalización automática por Fatiga (<= 3 días de descanso)
-      const fatigaLocal = (h.diasDescanso ?? 7) <= 3;
-      const fatigaVisita = (a.diasDescanso ?? 7) <= 3;
-      if (fatigaLocal) {
+      // 4. Ajuste por Diferencial Elo (+/- 0.0005 por punto de Elo)
+      const eloH = Number(ctx.homeElo) || 1550;
+      const eloA = Number(ctx.awayElo) || 1550;
+      const eloDiff = eloH - eloA;
+      lambdaH *= Math.max(0.55, 1 + eloDiff * 0.0005);
+      lambdaA *= Math.max(0.55, 1 - eloDiff * 0.0005);
+
+      // 5. Ajuste automático por Fatiga (días de descanso)
+      const restH = typeof ctx.homeRestDays === "number" ? ctx.homeRestDays : 5;
+      const restA = typeof ctx.awayRestDays === "number" ? ctx.awayRestDays : 5;
+
+      if (restH <= 3) {
         lambdaH *= 0.94; // -6% ataque
         lambdaA *= 1.04; // +4% goles recibidos
-      }
-      if (fatigaVisita) {
-        lambdaA *= 0.94; // -6% ataque
-        lambdaH *= 1.04; // +4% goles recibidos
+      } else if (restH === 4) {
+        lambdaH *= 0.98; // -2% ataque
       }
 
-      // 6. Impacto de Bajas (Ataque y Defensa)
-      lambdaH *= (1 + (Number(h.bajasAtaquePct) || 0) / 100);
-      lambdaH *= (1 + (Number(a.bajasDefensaPct) || 0) / 100);
-      lambdaA *= (1 + (Number(a.bajasAtaquePct) || 0) / 100);
-      lambdaA *= (1 + (Number(h.bajasDefensaPct) || 0) / 100);
+      if (restA <= 3) {
+        lambdaA *= 0.94;
+        lambdaH *= 1.04;
+      } else if (restA === 4) {
+        lambdaA *= 0.98;
+      }
 
-      // 7. Motivación y Clima
-      lambdaH *= (1 + (Number(ctx.motivacionLocal) || 0) / 100);
-      lambdaA *= (1 + (Number(ctx.motivacionVisita) || 0) / 100);
+      // 6. Ajuste por Bajas (0-25%), Motivación What-If y Factor Clima silencioso
+      const injH = Math.max(0, Math.min(25, Number(wi.injHome) || 0));
+      const injA = Math.max(0, Math.min(25, Number(wi.injAway) || 0));
+      lambdaH *= (1 - injH / 100);
+      lambdaA *= (1 - injA / 100);
 
-      const modClima = 1 + (Number(ctx.modificadorGoles) || 0);
-      lambdaH *= modClima;
-      lambdaA *= modClima;
+      lambdaH *= (1 + (Number(wi.motHome) || 0) / 100);
+      lambdaA *= (1 + (Number(wi.motAway) || 0) / 100);
 
-      // 8. Simulaciones What-If en vivo (sin alterar el JSON)
-      lambdaH *= (1 + wi.atkH / 100) * (1 + wi.clima / 100);
-      lambdaA *= (1 + wi.atkA / 100) * (1 + wi.clima / 100);
+      const weather = Math.max(0.75, Math.min(1.15, Number(wi.weather) || 1.0));
+      lambdaH *= weather;
+      lambdaA *= weather;
 
-      // Limitar lambdas para estabilidad numérica
-      lambdaH = Math.max(0.15, Math.min(6.5, lambdaH));
-      lambdaA = Math.max(0.15, Math.min(6.5, lambdaA));
+      // Estabilidad numérica
+      lambdaH = Math.max(0.15, Math.min(6.0, lambdaH));
+      lambdaA = Math.max(0.15, Math.min(6.0, lambdaA));
 
-      // 9. Matriz de Marcadores Exactos (0 a 7 goles) con Dixon-Coles
-      const MAX_GOALS = 7;
+      // 7. Matriz Poisson 0..7 x 0..7 con corrección Dixon-Coles y normalización a 1.0
+      const MAX_G = 7;
       const matrix = [];
-      let totalProb = 0;
+      let sumProb = 0;
 
-      for (let i = 0; i <= MAX_GOALS; i++) {
+      for (let i = 0; i <= MAX_G; i++) {
         matrix[i] = [];
-        const pH = poissonPmf(i, lambdaH);
-        for (let j = 0; j <= MAX_GOALS; j++) {
-          const pA = poissonPmf(j, lambdaA);
+        const pI = poissonPmf(i, lambdaH);
+        for (let j = 0; j <= MAX_G; j++) {
+          const pJ = poissonPmf(j, lambdaA);
           const tau = dixonColesTau(i, j, lambdaH, lambdaA, cfg.rho);
-          const p = pH * pA * tau;
+          const p = pI * pJ * tau;
           matrix[i][j] = p;
-          totalProb += p;
+          sumProb += p;
         }
       }
 
-      // Normalizar matriz para que sume exactamente 1.0 (100%)
-      let probH = 0, probD = 0, probA = 0;
-      let over15 = 0, over25 = 0, over35 = 0, bttsSi = 0;
+      let pHome = 0, pDraw = 0, pAway = 0;
+      let over15 = 0, over25 = 0, over35 = 0, bttsYes = 0;
       const exactScores = [];
 
-      for (let i = 0; i <= MAX_GOALS; i++) {
-        for (let j = 0; j <= MAX_GOALS; j++) {
-          const p = matrix[i][j] / totalProb;
+      for (let i = 0; i <= MAX_G; i++) {
+        for (let j = 0; j <= MAX_G; j++) {
+          const p = matrix[i][j] / sumProb;
           matrix[i][j] = p;
           exactScores.push({ home: i, away: j, prob: p });
 
-          if (i > j) probH += p;
-          else if (i === j) probD += p;
-          else probA += p;
+          if (i > j) pHome += p;
+          else if (i === j) pDraw += p;
+          else pAway += p;
 
-          const totalGoals = i + j;
-          if (totalGoals > 1.5) over15 += p;
-          if (totalGoals > 2.5) over25 += p;
-          if (totalGoals > 3.5) over35 += p;
-          if (i >= 1 && j >= 1) bttsSi += p;
+          const tot = i + j;
+          if (tot > 1.5) over15 += p;
+          if (tot > 2.5) over25 += p;
+          if (tot > 3.5) over35 += p;
+          if (i >= 1 && j >= 1) bttsYes += p;
         }
       }
 
-      exactScores.sort((x, y) => y.prob - x.prob);
+      exactScores.sort((a, b) => b.prob - a.prob);
 
-      // 10. Consenso opcional con Pinnacle (sin vig) para 1X2
-      const pinnacleDevig = devigPinnacle(match.cuotasPinnacle);
-      let finalH = probH;
-      let finalD = probD;
-      let finalA = probA;
+      // 8. Consenso Pinnacle opcional solo para 1X2 (cuando las 3 cuotas > 1.01)
+      const pinDevig = devigPinnacle(match.odds);
+      let finalH = pHome, finalD = pDraw, finalA = pAway;
 
-      if (pinnacleDevig && cfg.weightPinnacle > 0) {
+      if (pinDevig && cfg.weightPinnacle > 0) {
         const w = cfg.weightPinnacle;
-        finalH = (1 - w) * probH + w * pinnacleDevig.local;
-        finalD = (1 - w) * probD + w * pinnacleDevig.empate;
-        finalA = (1 - w) * probA + w * pinnacleDevig.visita;
+        finalH = (1 - w) * pHome + w * pinDevig.home;
+        finalD = (1 - w) * pDraw + w * pinDevig.draw;
+        finalA = (1 - w) * pAway + w * pinDevig.away;
         const norm = finalH + finalD + finalA;
         finalH /= norm;
         finalD /= norm;
         finalA /= norm;
       }
 
-      // 11. Derivación de Mercados y Cálculo de EV + Kelly
-      const c = match.cuotas || {};
-      const rawMarkets = [
-        { key: "local", group: "1X2", name: `Local (${match.local})`, prob: finalH, odd: c.local },
-        { key: "empate", group: "1X2", name: "Empate (X)", prob: finalD, odd: c.empate },
-        { key: "visita", group: "1X2", name: `Visita (${match.visitante})`, prob: finalA, odd: c.visita },
-        { key: "doble1X", group: "Doble Oport.", name: "Doble Oportunidad 1X", prob: finalH + finalD, odd: c.doble1X },
-        { key: "dobleX2", group: "Doble Oport.", name: "Doble Oportunidad X2", prob: finalD + finalA, odd: c.dobleX2 },
-        { key: "doble12", group: "Doble Oport.", name: "Doble Oportunidad 12", prob: finalH + finalA, odd: c.doble12 },
-        { key: "over15", group: "Goles", name: "Más de 1.5 Goles", prob: over15, odd: c.over15 },
-        { key: "over25", group: "Goles", name: "Más de 2.5 Goles", prob: over25, odd: c.over25 },
-        { key: "under25", group: "Goles", name: "Menos de 2.5 Goles", prob: 1 - over25, odd: c.under25 },
-        { key: "under35", group: "Goles", name: "Menos de 3.5 Goles", prob: 1 - over35, odd: c.under35 },
-        { key: "bttsSi", group: "BTTS", name: "Ambos Anotan — Sí", prob: bttsSi, odd: c.bttsSi },
-        { key: "bttsNo", group: "BTTS", name: "Ambos Anotan — No", prob: 1 - bttsSi, odd: c.bttsNo }
+      // 9. Derivación completa de mercados + EV% + Kelly fraccionado (tope 15%)
+      const marketDefs = [
+        { key: "home",     group: "1X2",          name: `Local (${match.homeTeam})`,  prob: finalH },
+        { key: "draw",     group: "1X2",          name: "Empate (X)",                 prob: finalD },
+        { key: "away",     group: "1X2",          name: `Visita (${match.awayTeam})`, prob: finalA },
+        { key: "dc_1x",    group: "Doble Oport.", name: "Doble Oportunidad 1X",       prob: finalH + finalD },
+        { key: "dc_x2",    group: "Doble Oport.", name: "Doble Oportunidad X2",       prob: finalD + finalA },
+        { key: "dc_12",    group: "Doble Oport.", name: "Doble Oportunidad 12",       prob: finalH + finalA },
+        { key: "over15",   group: "Goles",        name: "Más de 1.5 Goles",           prob: over15 },
+        { key: "under15",  group: "Goles",        name: "Menos de 1.5 Goles",         prob: 1 - over15 },
+        { key: "over25",   group: "Goles",        name: "Más de 2.5 Goles",           prob: over25 },
+        { key: "under25",  group: "Goles",        name: "Menos de 2.5 Goles",         prob: 1 - over25 },
+        { key: "over35",   group: "Goles",        name: "Más de 3.5 Goles",           prob: over35 },
+        { key: "under35",  group: "Goles",        name: "Menos de 3.5 Goles",         prob: 1 - over35 },
+        { key: "btts_yes", group: "BTTS",         name: "Ambos Anotan — Sí",          prob: bttsYes },
+        { key: "btts_no",  group: "BTTS",         name: "Ambos Anotan — No",          prob: 1 - bttsYes }
       ];
 
-      const markets = rawMarkets.map(m => {
-        const fairOdd = m.prob > 0 ? 1 / m.prob : 0;
-        const hasOdd = typeof m.odd === "number" && m.odd > 1.0;
-        const impliedProb = hasOdd ? 1 / m.odd : null;
-        const evPct = hasOdd ? (m.prob * m.odd - 1) * 100 : null;
+      const markets = marketDefs.map(def => {
+        const odd = getEffectiveOdd(match, def.key);
+        const hasOdd = isValidOdd(odd);
+        const fairOdd = def.prob > 0 ? 1 / def.prob : 0;
+        const evPct = hasOdd ? ((def.prob * odd) - 1) * 100 : null;
 
         let kellyPct = 0;
-        if (hasOdd && m.odd > 1) {
-          const b = m.odd - 1;
-          const fullKelly = (b * m.prob - (1 - m.prob)) / b;
-          kellyPct = Math.max(0, fullKelly * cfg.kellyFraction * 100);
+        if (hasOdd) {
+          const rawKelly = ((def.prob * odd - 1) / (odd - 1)) * cfg.kellyFraction * 100;
+          kellyPct = Math.min(MAX_KELLY_CAP_PCT, Math.max(0, rawKelly));
         }
 
-        const stakeAmount = cfg.bankroll * (kellyPct / 100);
+        const stakeAmount = hasOdd ? cfg.bankroll * (kellyPct / 100) : 0;
         const isValue = hasOdd && evPct >= cfg.minEvPct;
 
         return {
-          ...m,
-          fairOdd,
+          ...def,
+          odd: hasOdd ? odd : 0,
           hasOdd,
-          impliedProb,
+          fairOdd,
           evPct,
           kellyPct,
           stakeAmount,
@@ -859,12 +899,13 @@
         match,
         lambdaH,
         lambdaA,
+        eloH,
+        eloA,
         eloDiff,
-        fatigaLocal,
-        fatigaVisita,
-        pinnacleDevig,
-        probs1X2: { local: finalH, empate: finalD, visita: finalA },
-        rawPoisson1X2: { local: probH, empate: probD, visita: probA },
+        restH,
+        restA,
+        pinDevig,
+        probs1X2: { home: finalH, draw: finalD, away: finalA },
         matrix,
         topScores: exactScores.slice(0, 5),
         markets,
@@ -875,205 +916,272 @@
     /***************************************************************************
      * 4. UTILIDADES DE FORMATO Y UI
      ***************************************************************************/
-    function fmtPct(val, decimals = 1) {
-      return `${(val * 100).toFixed(decimals)}%`;
+    function escapeHtml(str) {
+      if (str === null || str === undefined) return "";
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
     }
 
-    function fmtNum(val, decimals = 2) {
-      return Number(val).toFixed(decimals);
+    function fmtPct(val, dec = 1) {
+      return `${(val * 100).toFixed(dec)}%`;
+    }
+
+    function fmtNum(val, dec = 2) {
+      return Number(val).toFixed(dec);
     }
 
     function fmtMoney(val) {
-      return `$${Number(val).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+      return `$${Number(val).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
     }
 
-    function escapeHtml(str) {
-      if (str === null || str === undefined) return '';
-      return String(str)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;');
+    function fmtLocalDateTime(iso) {
+      if (!iso) return "Sin fecha";
+      const d = new Date(iso);
+      if (Number.isNaN(d.getTime())) return iso;
+      return d.toLocaleString(undefined, {
+        day: "2-digit",
+        month: "short",
+        hour: "2-digit",
+        minute: "2-digit"
+      });
     }
 
-    /**
-     * Muestra un aviso elegante (reemplazo seguro de alert)
-     */
-    function showToast(message, type = 'success') {
-      const container = document.getElementById('toastContainer');
-      const toast = document.createElement('div');
+    function fmtLocalTimeOnly(iso) {
+      if (!iso) return "--:--";
+      const d = new Date(iso);
+      if (Number.isNaN(d.getTime())) return "--:--";
+      return d.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" });
+    }
 
-      const colors = {
-        success: 'bg-emerald-950/95 border-emerald-500/50 text-emerald-200',
-        error: 'bg-red-950/95 border-red-500/50 text-red-200',
-        info: 'bg-slate-900/95 border-cyan-500/50 text-cyan-200'
+    function renderFormBadges(formStr) {
+      const clean = (formStr || "DDDDD").toUpperCase().slice(-5);
+      return clean.split("").map(ch => {
+        if (ch === "W") {
+          return `<span class="inline-flex items-center justify-center w-5 h-5 rounded text-[10px] font-mono font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">W</span>`;
+        }
+        if (ch === "L") {
+          return `<span class="inline-flex items-center justify-center w-5 h-5 rounded text-[10px] font-mono font-bold bg-red-500/20 text-red-400 border border-red-500/40">L</span>`;
+        }
+        return `<span class="inline-flex items-center justify-center w-5 h-5 rounded text-[10px] font-mono font-bold bg-slate-700/60 text-slate-300 border border-slate-600/60">D</span>`;
+      }).join("");
+    }
+
+    function showToast(message, type = "success") {
+      const container = document.getElementById("toastContainer");
+      const toast = document.createElement("div");
+      const palette = {
+        success: "bg-emerald-950/95 border-emerald-500/50 text-emerald-200",
+        error: "bg-red-950/95 border-red-500/50 text-red-200",
+        info: "bg-slate-900/95 border-sky-500/50 text-sky-200",
+        warn: "bg-amber-950/95 border-amber-500/50 text-amber-200"
       };
+      const dot = type === "error" ? "bg-red-400" : type === "warn" ? "bg-amber-400" : type === "info" ? "bg-sky-400" : "bg-emerald-400";
 
-      toast.className = `pointer-events-auto px-4 py-3 rounded-xl border shadow-xl text-xs sm:text-sm font-medium flex items-center gap-2.5 transition-all duration-300 translate-y-2 opacity-0 ${colors[type] || colors.info}`;
-      toast.innerHTML = `
-        <span class="w-2 h-2 rounded-full flex-shrink-0 ${type === 'error' ? 'bg-red-400' : type === 'info' ? 'bg-cyan-400' : 'bg-emerald-400'}"></span>
-        <span>${escapeHtml(message)}</span>
-      `;
+      toast.className = `pointer-events-auto px-4 py-3 rounded-xl border shadow-xl text-xs sm:text-sm font-medium flex items-center gap-2.5 transition-all duration-300 translate-y-2 opacity-0 ${palette[type] || palette.info}`;
+      toast.innerHTML = `<span class="w-2 h-2 rounded-full flex-shrink-0 ${dot}"></span><span>${escapeHtml(message)}</span>`;
       container.appendChild(toast);
 
-      requestAnimationFrame(() => {
-        toast.classList.remove('translate-y-2', 'opacity-0');
-      });
-
+      requestAnimationFrame(() => toast.classList.remove("translate-y-2", "opacity-0"));
       setTimeout(() => {
-        toast.classList.add('translate-y-2', 'opacity-0');
+        toast.classList.add("translate-y-2", "opacity-0");
         setTimeout(() => toast.remove(), 300);
       }, 3200);
     }
 
-    /***************************************************************************
-     * 5. RENDERIZADO COMPLETO DE LA INTERFAZ
-     ***************************************************************************/
-    function renderAll() {
-      const analyses = state.matches.map(m => analyzeMatch(m));
+    function updateSourceBadge() {
+      const badge = document.getElementById("dataSourceBadge");
+      const count = state.matches.length;
+      if (state.sourceMode === "live") {
+        const hora = fmtLocalTimeOnly(state.updatedAt || new Date().toISOString());
+        badge.className = "inline-flex items-center gap-2 px-2.5 py-1 rounded-full text-[11px] font-mono font-semibold bg-emerald-500/15 text-emerald-300 border border-emerald-500/35";
+        badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span><span>LIVE JSON • ${count} partidos • Act: ${escapeHtml(hora)}</span>`;
+      } else if (state.sourceMode === "manual") {
+        badge.className = "inline-flex items-center gap-2 px-2.5 py-1 rounded-full text-[11px] font-mono font-semibold bg-sky-500/15 text-sky-300 border border-sky-500/35";
+        badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-sky-400"></span><span>JSON MANUAL • ${count} partidos</span>`;
+      } else {
+        badge.className = "inline-flex items-center gap-2 px-2.5 py-1 rounded-full text-[11px] font-mono font-semibold bg-amber-500/15 text-amber-300 border border-amber-500/35";
+        badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-400"></span><span>MODO DEMO (sin partidos_hoy.json)</span>`;
+      }
+    }
 
-      // Asegurar que haya un partido seleccionado válido
-      if (!analyses.some(a => a.match.id === state.selectedMatchId) && analyses.length > 0) {
-        state.selectedMatchId = analyses[0].match.id;
+    function populateLeagueFilter() {
+      const select = document.getElementById("cfgLeagueFilter");
+      const leagues = Array.from(new Set(state.matches.map(m => m.league).filter(Boolean))).sort();
+      const prev = state.leagueFilter;
+
+      select.innerHTML = `<option value="ALL">Todas las ligas (${state.matches.length})</option>` +
+        leagues.map(l => {
+          const n = state.matches.filter(m => m.league === l).length;
+          return `<option value="${escapeHtml(l)}">${escapeHtml(l)} (${n})</option>`;
+        }).join("");
+
+      if (prev !== "ALL" && leagues.includes(prev)) {
+        select.value = prev;
+        state.leagueFilter = prev;
+      } else {
+        select.value = "ALL";
+        state.leagueFilter = "ALL";
+      }
+    }
+
+    /***************************************************************************
+     * 5. RENDERIZADO DE LAS 3 SECCIONES
+     ***************************************************************************/
+    function getFilteredMatches() {
+      if (state.leagueFilter === "ALL") return state.matches;
+      return state.matches.filter(m => m.league === state.leagueFilter);
+    }
+
+    function renderAll() {
+      const filtered = getFilteredMatches();
+      const analyses = filtered.map(m => analyzeMatch(m));
+
+      if (!analyses.some(a => a.match.id === state.selectedMatchId)) {
+        state.selectedMatchId = analyses.length > 0 ? analyses[0].match.id : null;
       }
 
       renderRadar(analyses);
       renderMatchList(analyses);
 
-      const selectedAnalysis = analyses.find(a => a.match.id === state.selectedMatchId);
-      renderDeepAnalysis(selectedAnalysis);
+      const selected = analyses.find(a => a.match.id === state.selectedMatchId) || null;
+      renderDeepAnalysis(selected);
     }
 
     /**
-     * Vista 1: Radar Global de Value Bets
+     * Sección 1: Radar Global de Value Bets (+EV)
      */
     function renderRadar(analyses) {
-      const allValueBets = [];
+      const allVBs = [];
       analyses.forEach(a => {
         a.valueBets.forEach(vb => {
-          allValueBets.push({
+          allVBs.push({
             matchId: a.match.id,
-            liga: a.match.liga,
-            matchName: `${a.match.local} vs ${a.match.visitante}`,
+            league: a.match.league,
+            date: a.match.date,
+            matchLabel: `${a.match.homeTeam} vs ${a.match.awayTeam}`,
             ...vb
           });
         });
       });
 
-      // Ordenar de mayor a menor EV%
-      allValueBets.sort((x, y) => y.evPct - x.evPct);
+      allVBs.sort((x, y) => y.evPct - x.evPct);
+      const totalStake = allVBs.reduce((acc, b) => acc + b.stakeAmount, 0);
 
-      const totalStake = allValueBets.reduce((acc, b) => acc + b.stakeAmount, 0);
+      document.getElementById("kpiTotalMatches").textContent = analyses.length;
+      document.getElementById("kpiValueBets").textContent = allVBs.length;
+      document.getElementById("kpiTotalStake").textContent = fmtMoney(totalStake);
 
-      document.getElementById('kpiTotalMatches').textContent = analyses.length;
-      document.getElementById('kpiValueBets').textContent = allValueBets.length;
-      document.getElementById('kpiTotalStake').textContent = fmtMoney(totalStake);
+      const tbody = document.getElementById("radarTableBody");
 
-      const tbody = document.getElementById('radarTableBody');
-
-      if (allValueBets.length === 0) {
+      if (allVBs.length === 0) {
         tbody.innerHTML = `
           <tr>
             <td colspan="8" class="py-8 px-4 text-center text-slate-400 text-sm">
-              No se detectaron Value Bets con EV &ge; <span class="font-mono text-emerald-400">${state.config.minEvPct}%</span>.
-              Prueba ajustar el umbral de EV, calibrar los pesos o cargar nuevos partidos.
+              No se detectaron Value Bets con EV &ge; <span class="font-mono text-emerald-400">${fmtNum(state.config.minEvPct, 1)}%</span> en los partidos filtrados.
+              Prueba bajar el umbral de EV, revisar los parámetros o editar cuotas en la auditoría.
             </td>
           </tr>
         `;
         return;
       }
 
-      tbody.innerHTML = allValueBets.map(vb => `
-        <tr data-match-id="${escapeHtml(vb.matchId)}" class="radar-row hover:bg-emerald-500/10 transition cursor-pointer group">
+      tbody.innerHTML = allVBs.map(vb => `
+        <tr data-radar-match="${escapeHtml(vb.matchId)}" class="radar-row hover:bg-emerald-500/10 transition cursor-pointer group">
           <td class="py-3 px-4">
-            <div class="font-semibold text-white group-hover:text-emerald-300 transition">${escapeHtml(vb.matchName)}</div>
-            <div class="text-[11px] text-slate-400">${escapeHtml(vb.liga)}</div>
+            <div class="font-semibold text-white group-hover:text-emerald-300 transition">${escapeHtml(vb.matchLabel)}</div>
+            <div class="text-[11px] text-slate-400 flex flex-wrap items-center gap-1.5 mt-0.5">
+              <span class="text-sky-400/90 font-medium">${escapeHtml(vb.league)}</span>
+              <span class="text-slate-600">•</span>
+              <span class="font-mono">${escapeHtml(fmtLocalDateTime(vb.date))}</span>
+            </div>
           </td>
-          <td class="py-3 px-4">
-            <span class="inline-flex items-center px-2.5 py-0.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-200 border border-slate-700">
+          <td class="py-3 px-3">
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-lg text-xs font-semibold bg-[#0b0f19] text-slate-200 border border-[#1f2937]">
               ${escapeHtml(vb.name)}
             </span>
           </td>
-          <td class="py-3 px-4 text-right font-mono tabular-nums text-slate-200">${fmtPct(vb.prob, 1)}</td>
-          <td class="py-3 px-4 text-right font-mono tabular-nums text-slate-400">${fmtNum(vb.fairOdd, 2)}</td>
-          <td class="py-3 px-4 text-right font-mono tabular-nums font-bold text-white">${fmtNum(vb.odd, 2)}</td>
-          <td class="py-3 px-4 text-right">
+          <td class="py-3 px-3 text-right font-mono tabular-nums text-slate-200">${fmtPct(vb.prob, 1)}</td>
+          <td class="py-3 px-3 text-right font-mono tabular-nums text-slate-400">${fmtNum(vb.fairOdd, 2)}</td>
+          <td class="py-3 px-3 text-right font-mono tabular-nums font-bold text-white">${fmtNum(vb.odd, 2)}</td>
+          <td class="py-3 px-3 text-right">
             <span class="inline-flex items-center px-2 py-0.5 rounded-md font-mono tabular-nums text-xs font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
               +${fmtNum(vb.evPct, 2)}%
             </span>
           </td>
-          <td class="py-3 px-4 text-right font-mono tabular-nums text-cyan-400">${fmtNum(vb.kellyPct, 2)}%</td>
+          <td class="py-3 px-3 text-right font-mono tabular-nums text-sky-400">${fmtNum(vb.kellyPct, 2)}%</td>
           <td class="py-3 px-4 text-right font-mono tabular-nums font-bold text-emerald-400">${fmtMoney(vb.stakeAmount)}</td>
         </tr>
-      `).join('');
+      `).join("");
 
-      // Evento click en fila del radar para saltar al partido
-      tbody.querySelectorAll('.radar-row').forEach(row => {
-        row.addEventListener('click', () => {
-          state.selectedMatchId = row.dataset.matchId;
+      tbody.querySelectorAll(".radar-row").forEach(row => {
+        row.addEventListener("click", () => {
+          state.selectedMatchId = row.dataset.radarMatch;
           renderAll();
-          document.getElementById('deepAnalysisPanel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+          document.getElementById("deepAnalysisPanel").scrollIntoView({ behavior: "smooth", block: "start" });
         });
       });
     }
 
     /**
-     * Lista izquierda de partidos
+     * Sección 2: Selector de Partidos
      */
     function renderMatchList(analyses) {
-      document.getElementById('matchCountBadge').textContent = `${analyses.length} eventos`;
-      const container = document.getElementById('matchListContainer');
+      document.getElementById("matchCountBadge").textContent = `${analyses.length} eventos`;
+      const container = document.getElementById("matchListContainer");
 
       if (analyses.length === 0) {
-        container.innerHTML = `<div class="p-4 rounded-xl bg-[#111827] border border-slate-800 text-sm text-slate-400 text-center">Sin partidos cargados.</div>`;
+        container.innerHTML = `<div class="p-4 rounded-xl bg-[#111827] border border-[#1f2937] text-xs text-slate-400 text-center">Sin partidos para el filtro seleccionado.</div>`;
         return;
       }
 
       container.innerHTML = analyses.map(a => {
-        const isSelected = a.match.id === state.selectedMatchId;
+        const m = a.match;
+        const isSelected = m.id === state.selectedMatchId;
         const vbCount = a.valueBets.length;
-        const wi = getWhatIf(a.match.id);
-        const hasWhatIf = wi.atkH !== 0 || wi.atkA !== 0 || wi.clima !== 0;
+        const simActive = isWhatIfModified(m);
 
         return `
-          <button type="button" data-select-match="${escapeHtml(a.match.id)}"
+          <button type="button" data-select-match="${escapeHtml(m.id)}"
             class="w-full text-left p-3.5 rounded-2xl border transition cursor-pointer ${
               isSelected
-                ? 'bg-[#182234] border-emerald-500/70 shadow-lg shadow-emerald-500/10'
-                : 'bg-[#111827] border-slate-800 hover:border-slate-700 hover:bg-slate-900/90'
+                ? "bg-[#161f32] border-emerald-500/70 shadow-lg shadow-emerald-500/10"
+                : "bg-[#111827] border-[#1f2937] hover:border-slate-700 hover:bg-[#141c2c]"
             }">
             <div class="flex items-center justify-between gap-2 mb-1.5">
-              <span class="text-[11px] font-semibold uppercase tracking-wider text-slate-400 truncate">${escapeHtml(a.match.liga)}</span>
-              <div class="flex items-center gap-1.5 flex-shrink-0">
-                ${hasWhatIf ? `<span class="px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-400 border border-amber-500/30 text-[10px] font-mono font-bold">SIM</span>` : ''}
+              <span class="text-[10px] font-semibold uppercase tracking-wider text-sky-400/90 truncate">${escapeHtml(m.league)}</span>
+              <div class="flex items-center gap-1 flex-shrink-0">
+                ${simActive ? `<span class="px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-400 border border-amber-500/30 text-[9px] font-mono font-bold">SIM</span>` : ""}
                 ${vbCount > 0
                   ? `<span class="px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 text-[10px] font-mono font-bold">${vbCount} +EV</span>`
-                  : `<span class="px-2 py-0.5 rounded-full bg-slate-800 text-slate-500 text-[10px] font-mono">0 +EV</span>`
+                  : `<span class="px-2 py-0.5 rounded-full bg-slate-800/90 text-slate-500 text-[10px] font-mono">0 +EV</span>`
                 }
               </div>
             </div>
 
             <div class="space-y-1">
-              <div class="flex items-center justify-between text-sm">
-                <span class="font-bold text-white truncate pr-2">${escapeHtml(a.match.local)}</span>
+              <div class="flex items-center justify-between text-xs sm:text-sm">
+                <span class="font-bold text-white truncate pr-2">${escapeHtml(m.homeTeam)}</span>
                 <span class="font-mono text-xs text-emerald-400 tabular-nums">λ ${fmtNum(a.lambdaH, 2)}</span>
               </div>
-              <div class="flex items-center justify-between text-sm">
-                <span class="font-bold text-slate-300 truncate pr-2">${escapeHtml(a.match.visitante)}</span>
-                <span class="font-mono text-xs text-cyan-400 tabular-nums">λ ${fmtNum(a.lambdaA, 2)}</span>
+              <div class="flex items-center justify-between text-xs sm:text-sm">
+                <span class="font-bold text-slate-300 truncate pr-2">${escapeHtml(m.awayTeam)}</span>
+                <span class="font-mono text-xs text-sky-400 tabular-nums">λ ${fmtNum(a.lambdaA, 2)}</span>
               </div>
             </div>
 
-            <div class="mt-2.5 pt-2 border-t border-slate-800/80 flex items-center justify-between text-[11px] text-slate-400 font-mono tabular-nums">
-              <span>${escapeHtml(a.match.fecha)}</span>
-              <span>${Math.round(a.probs1X2.local * 100)}% / ${Math.round(a.probs1X2.empate * 100)}% / ${Math.round(a.probs1X2.visita * 100)}%</span>
+            <div class="mt-2 pt-2 border-t border-[#1f2937] flex items-center justify-between text-[10px] text-slate-400 font-mono tabular-nums">
+              <span>${escapeHtml(fmtLocalDateTime(m.date))}</span>
+              <span>${Math.round(a.probs1X2.home * 100)}% / ${Math.round(a.probs1X2.draw * 100)}% / ${Math.round(a.probs1X2.away * 100)}%</span>
             </div>
           </button>
         `;
-      }).join('');
+      }).join("");
 
-      container.querySelectorAll('[data-select-match]').forEach(btn => {
-        btn.addEventListener('click', () => {
+      container.querySelectorAll("[data-select-match]").forEach(btn => {
+        btn.addEventListener("click", () => {
           state.selectedMatchId = btn.dataset.selectMatch;
           renderAll();
         });
@@ -1081,607 +1189,712 @@
     }
 
     /**
-     * Panel derecho: Análisis Profundo del Partido Seleccionado
+     * Sección 3: Auditoría Profunda del Partido
      */
     function renderDeepAnalysis(analysis) {
-      const panel = document.getElementById('deepAnalysisPanel');
+      const panel = document.getElementById("deepAnalysisPanel");
 
       if (!analysis) {
         panel.innerHTML = `
-          <div class="p-10 rounded-2xl bg-[#111827] border border-slate-800 text-center text-slate-400">
-            Carga un archivo JSON con al menos un partido para iniciar el análisis predictivo.
+          <div class="p-10 rounded-2xl bg-[#111827] border border-[#1f2937] text-center text-slate-400 text-sm">
+            Selecciona o carga un partido para iniciar la auditoría cuantitativa.
           </div>
         `;
         return;
       }
 
       const m = analysis.match;
-      const h = m.equipoLocal;
-      const a = m.equipoVisita;
-      const ctx = m.contexto || {};
-      const wi = getWhatIf(m.id);
-      const isSimActive = wi.atkH !== 0 || wi.atkA !== 0 || wi.clima !== 0;
+      const s = m.stats || {};
+      const ctx = m.context || {};
+      const wi = getWhatIf(m);
+      const simActive = isWhatIfModified(m);
+      const hasCustomOdds = state.customOddsByMatch[m.id] && Object.keys(state.customOddsByMatch[m.id]).length > 0;
 
-      // Probabilidades 1X2 para la barra visual
-      const pH = (analysis.probs1X2.local * 100).toFixed(1);
-      const pD = (analysis.probs1X2.empate * 100).toFixed(1);
-      const pA = (analysis.probs1X2.visita * 100).toFixed(1);
+      const pH = (analysis.probs1X2.home * 100).toFixed(1);
+      const pD = (analysis.probs1X2.draw * 100).toFixed(1);
+      const pA = (analysis.probs1X2.away * 100).toFixed(1);
 
-      // Calcular probabilidad máxima de la matriz 0..5 para escalar el heatmap
+      // Heatmap 0..5 goles
       let maxCellProb = 0.01;
       for (let i = 0; i <= 5; i++) {
         for (let j = 0; j <= 5; j++) {
-          if (analysis.matrix[i][j] > maxCellProb) {
-            maxCellProb = analysis.matrix[i][j];
-          }
+          if (analysis.matrix[i][j] > maxCellProb) maxCellProb = analysis.matrix[i][j];
         }
       }
 
-      // Construir filas del Heatmap 0 a 5
-      let heatmapRowsHtml = '';
+      let heatmapRows = "";
       for (let i = 0; i <= 5; i++) {
-        let cols = `<th class="p-2 text-xs font-mono text-emerald-400 bg-slate-900/70 border border-slate-800">${i}</th>`;
+        let cells = `<th class="p-2 text-xs font-mono text-emerald-400 bg-[#0b0f19] border border-[#1f2937]">${i}</th>`;
         for (let j = 0; j <= 5; j++) {
           const prob = analysis.matrix[i][j];
           const intensity = prob / maxCellProb;
           const alpha = (0.06 + intensity * 0.62).toFixed(2);
-          const textClass = intensity > 0.55 ? 'text-white font-bold' : 'text-slate-300';
-          const fairOdd = prob > 0 ? (1 / prob).toFixed(2) : '-';
-          cols += `
-            <td class="p-2 text-center font-mono tabular-nums text-xs border border-slate-800/80 transition hover:ring-2 hover:ring-emerald-400 cursor-default"
+          const txtClass = intensity > 0.55 ? "text-white font-bold" : "text-slate-300";
+          const fairOdd = prob > 0 ? (1 / prob).toFixed(2) : "—";
+          cells += `
+            <td class="p-2 text-center font-mono tabular-nums text-xs border border-[#1f2937]/90 hover:ring-2 hover:ring-emerald-400 transition cursor-default"
                 style="background-color: rgba(16, 185, 129, ${alpha});"
-                title="${escapeHtml(m.local)} ${i} - ${j} ${escapeHtml(m.visitante)} | Prob: ${(prob * 100).toFixed(2)}% | Cuota Justa: ${fairOdd}">
-              <div class="${textClass}">${(prob * 100).toFixed(1)}%</div>
+                title="${escapeHtml(m.homeTeam)} ${i} - ${j} ${escapeHtml(m.awayTeam)} | Prob: ${(prob * 100).toFixed(2)}% | Cuota Justa: ${fairOdd}">
+              <span class="${txtClass}">${(prob * 100).toFixed(1)}%</span>
             </td>
           `;
         }
-        heatmapRowsHtml += `<tr>${cols}</tr>`;
+        heatmapRows += `<tr>${cells}</tr>`;
       }
 
-      // Renderizar el panel completo
+      const injuriesH = Array.isArray(ctx.homeInjuriesList) ? ctx.homeInjuriesList : [];
+      const injuriesA = Array.isArray(ctx.awayInjuriesList) ? ctx.awayInjuriesList : [];
+
       panel.innerHTML = `
-        <!-- 1. TARJETA RESUMEN DEL PARTIDO -->
-        <div class="rounded-2xl bg-[#111827] border border-slate-800 p-5 space-y-5 shadow-xl">
-          <!-- Encabezado -->
-          <div class="flex flex-wrap items-start justify-between gap-3">
+        <!-- 1. ENCABEZADO Y MÉTRICAS DEL PARTIDO -->
+        <div class="rounded-2xl bg-[#111827] border border-[#1f2937] p-5 space-y-5 shadow-xl">
+          <div class="flex flex-wrap items-start justify-between gap-4">
             <div>
-              <div class="flex flex-wrap items-center gap-2 text-xs text-slate-400 mb-1">
-                <span class="px-2 py-0.5 rounded-md bg-slate-800 text-slate-200 font-semibold">${escapeHtml(m.liga)}</span>
-                <span class="font-mono">${escapeHtml(m.fecha)}</span>
-                <span class="font-mono text-slate-500">ID: ${escapeHtml(m.id)}</span>
+              <div class="flex flex-wrap items-center gap-2 text-xs text-slate-400 mb-1.5">
+                <span class="px-2.5 py-0.5 rounded-md bg-sky-500/15 text-sky-300 border border-sky-500/30 font-semibold">${escapeHtml(m.league)}</span>
+                <span class="font-mono text-slate-300">${escapeHtml(fmtLocalDateTime(m.date))}</span>
               </div>
               <h2 class="text-xl sm:text-2xl font-extrabold text-white tracking-tight">
-                ${escapeHtml(m.local)} <span class="text-slate-500 font-normal mx-1">vs</span> ${escapeHtml(m.visitante)}
+                ${escapeHtml(m.homeTeam)} <span class="text-slate-500 font-normal mx-1">vs</span> ${escapeHtml(m.awayTeam)}
               </h2>
             </div>
 
-            <!-- Goles Esperados (Lambdas) -->
-            <div class="flex items-center gap-3 bg-[#0b1120] border border-slate-800 rounded-xl px-4 py-2.5">
+            <!-- Lambdas calculadas -->
+            <div class="flex items-center gap-3 bg-[#0b0f19] border border-[#1f2937] rounded-xl px-4 py-2.5">
               <div class="text-center">
                 <div class="text-[10px] uppercase tracking-wider text-slate-400">λ Local</div>
-                <div class="text-xl font-mono font-extrabold text-emerald-400 tabular-nums">${fmtNum(analysis.lambdaH, 2)}</div>
+                <div class="text-lg sm:text-xl font-mono font-extrabold text-emerald-400 tabular-nums">${fmtNum(analysis.lambdaH, 2)}</div>
               </div>
-              <div class="h-8 w-px bg-slate-800"></div>
+              <div class="h-8 w-px bg-[#1f2937]"></div>
               <div class="text-center">
                 <div class="text-[10px] uppercase tracking-wider text-slate-400">λ Visita</div>
-                <div class="text-xl font-mono font-extrabold text-cyan-400 tabular-nums">${fmtNum(analysis.lambdaA, 2)}</div>
+                <div class="text-lg sm:text-xl font-mono font-extrabold text-sky-400 tabular-nums">${fmtNum(analysis.lambdaA, 2)}</div>
               </div>
-              <div class="h-8 w-px bg-slate-800"></div>
+              <div class="h-8 w-px bg-[#1f2937]"></div>
               <div class="text-center">
-                <div class="text-[10px] uppercase tracking-wider text-slate-400">Total xG</div>
-                <div class="text-xl font-mono font-extrabold text-white tabular-nums">${fmtNum(analysis.lambdaH + analysis.lambdaA, 2)}</div>
+                <div class="text-[10px] uppercase tracking-wider text-slate-400">Total λ</div>
+                <div class="text-lg sm:text-xl font-mono font-extrabold text-white tabular-nums">${fmtNum(analysis.lambdaH + analysis.lambdaA, 2)}</div>
               </div>
             </div>
           </div>
 
-          <!-- Barra comparativa 1X2 -->
+          <!-- Barra de probabilidades 1X2 -->
           <div class="space-y-2">
-            <div class="flex items-center justify-between text-xs font-mono tabular-nums">
-              <span class="text-emerald-400 font-bold">1 · ${escapeHtml(m.local)} (${pH}%)</span>
+            <div class="flex flex-wrap items-center justify-between gap-2 text-xs font-mono tabular-nums">
+              <span class="text-emerald-400 font-bold">1 · ${escapeHtml(m.homeTeam)} (${pH}%)</span>
               <span class="text-slate-300 font-semibold">X · Empate (${pD}%)</span>
-              <span class="text-cyan-400 font-bold">2 · ${escapeHtml(m.visitante)} (${pA}%)</span>
+              <span class="text-sky-400 font-bold">2 · ${escapeHtml(m.awayTeam)} (${pA}%)</span>
             </div>
             <div class="w-full h-3.5 rounded-full overflow-hidden flex bg-slate-800">
               <div style="width: ${pH}%" class="bg-emerald-500 transition-all duration-300"></div>
               <div style="width: ${pD}%" class="bg-slate-500 transition-all duration-300"></div>
-              <div style="width: ${pA}%" class="bg-cyan-500 transition-all duration-300"></div>
+              <div style="width: ${pA}%" class="bg-sky-400 transition-all duration-300"></div>
             </div>
-            ${analysis.pinnacleDevig ? `
+            ${analysis.pinDevig ? `
               <div class="flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-400 font-mono">
-                <span>Pinnacle sin vig (${(state.config.weightPinnacle * 100).toFixed(0)}% peso):
-                  <span class="text-slate-200">${fmtPct(analysis.pinnacleDevig.local)} / ${fmtPct(analysis.pinnacleDevig.empate)} / ${fmtPct(analysis.pinnacleDevig.visita)}</span>
+                <span>Consenso Pinnacle sin vig (${(state.config.weightPinnacle * 100).toFixed(0)}% peso):
+                  <span class="text-slate-200">${fmtPct(analysis.pinDevig.home)} / ${fmtPct(analysis.pinDevig.draw)} / ${fmtPct(analysis.pinDevig.away)}</span>
                 </span>
-                <span>Margen Pinnacle: <span class="text-amber-400">${fmtNum(analysis.pinnacleDevig.vigPct, 2)}%</span></span>
+                <span>Margen Pinnacle: <span class="text-amber-400">${fmtNum(analysis.pinDevig.vigPct, 2)}%</span></span>
               </div>
-            ` : ''}
+            ` : `
+              <div class="text-[11px] text-slate-500 font-mono">Pinnacle 1X2 no disponible para este partido (usando 100% modelo propio).</div>
+            `}
           </div>
 
-          <!-- Badges de Contexto, Elo, Fatiga, Clima y Bajas -->
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
-            <!-- Tarjeta Local -->
-            <div class="p-3.5 rounded-xl bg-[#0b1120] border border-slate-800/90 space-y-2">
-              <div class="flex items-center justify-between">
-                <span class="text-xs font-bold uppercase tracking-wider text-emerald-400">${escapeHtml(m.local)} (Local)</span>
-                <div class="flex items-center gap-1.5">
-                  <span class="px-2 py-0.5 rounded bg-slate-800 text-slate-200 font-mono text-[11px]">Elo ${h.elo}</span>
-                  ${analysis.fatigaLocal
-                    ? `<span class="px-2 py-0.5 rounded bg-amber-500/15 text-amber-400 border border-amber-500/30 font-mono text-[11px] font-semibold">Fatiga (${h.diasDescanso}d)</span>`
-                    : `<span class="px-2 py-0.5 rounded bg-slate-800/80 text-slate-400 font-mono text-[11px]">${h.diasDescanso}d desc.</span>`
-                  }
+          <!-- Comparativa Local vs Visita: Elo, Racha en badges, Descanso y Goles -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <!-- Local -->
+            <div class="p-3.5 rounded-xl bg-[#0b0f19] border border-[#1f2937] space-y-2.5">
+              <div class="flex items-center justify-between gap-2">
+                <span class="text-xs font-bold uppercase tracking-wider text-emerald-400 truncate">${escapeHtml(m.homeTeam)}</span>
+                <div class="flex items-center gap-1.5 flex-shrink-0">
+                  <span class="px-2 py-0.5 rounded bg-slate-800 text-white font-mono text-[11px] font-semibold">Elo ${analysis.eloH}</span>
+                  <span class="px-2 py-0.5 rounded font-mono text-[11px] ${
+                    analysis.restH <= 3
+                      ? "bg-red-500/15 text-red-300 border border-red-500/30 font-semibold"
+                      : analysis.restH === 4
+                        ? "bg-amber-500/15 text-amber-300 border border-amber-500/30"
+                        : "bg-slate-800/80 text-slate-400"
+                  }">${analysis.restH}d desc.</span>
                 </div>
               </div>
-              <div class="grid grid-cols-3 gap-2 text-[11px] font-mono text-slate-300">
-                <div>xG/xGA: <span class="text-white">${fmtNum(h.xG)} / ${fmtNum(h.xGA)}</span></div>
-                <div>Forma: <span class="text-white">${fmtNum(h.formaXG)} / ${fmtNum(h.formaXGA)}</span></div>
-                <div>Motiv: <span class="${(ctx.motivacionLocal || 0) >= 0 ? 'text-emerald-400' : 'text-red-400'}">${(ctx.motivacionLocal || 0) > 0 ? '+' : ''}${ctx.motivacionLocal || 0}%</span></div>
-              </div>
-              <div class="text-xs text-slate-400 border-t border-slate-800/80 pt-1.5">
-                <span class="text-amber-400 font-semibold">Bajas:</span> ${escapeHtml(h.listaBajas || 'Sin bajas reportadas')}
-                <span class="font-mono text-[11px] text-slate-500 ml-1">(Atk ${h.bajasAtaquePct || 0}%, Def +${h.bajasDefensaPct || 0}%)</span>
-              </div>
-            </div>
-
-            <!-- Tarjeta Visitante -->
-            <div class="p-3.5 rounded-xl bg-[#0b1120] border border-slate-800/90 space-y-2">
-              <div class="flex items-center justify-between">
-                <span class="text-xs font-bold uppercase tracking-wider text-cyan-400">${escapeHtml(m.visitante)} (Visita)</span>
-                <div class="flex items-center gap-1.5">
-                  <span class="px-2 py-0.5 rounded bg-slate-800 text-slate-200 font-mono text-[11px]">Elo ${a.elo}</span>
-                  ${analysis.fatigaVisita
-                    ? `<span class="px-2 py-0.5 rounded bg-amber-500/15 text-amber-400 border border-amber-500/30 font-mono text-[11px] font-semibold">Fatiga (${a.diasDescanso}d)</span>`
-                    : `<span class="px-2 py-0.5 rounded bg-slate-800/80 text-slate-400 font-mono text-[11px]">${a.diasDescanso}d desc.</span>`
-                  }
+              <div class="flex flex-wrap items-center justify-between gap-2 text-xs">
+                <div class="flex items-center gap-1">${renderFormBadges(ctx.homeForm)}</div>
+                <div class="font-mono text-[11px] text-slate-300 tabular-nums">
+                  GF/GA: <span class="text-white">${fmtNum(s.homeGoalsFor || 0)} / ${fmtNum(s.homeGoalsAgainst || 0)}</span>
                 </div>
               </div>
-              <div class="grid grid-cols-3 gap-2 text-[11px] font-mono text-slate-300">
-                <div>xG/xGA: <span class="text-white">${fmtNum(a.xG)} / ${fmtNum(a.xGA)}</span></div>
-                <div>Forma: <span class="text-white">${fmtNum(a.formaXG)} / ${fmtNum(a.formaXGA)}</span></div>
-                <div>Motiv: <span class="${(ctx.motivacionVisita || 0) >= 0 ? 'text-emerald-400' : 'text-red-400'}">${(ctx.motivacionVisita || 0) > 0 ? '+' : ''}${ctx.motivacionVisita || 0}%</span></div>
-              </div>
-              <div class="text-xs text-slate-400 border-t border-slate-800/80 pt-1.5">
-                <span class="text-amber-400 font-semibold">Bajas:</span> ${escapeHtml(a.listaBajas || 'Sin bajas reportadas')}
-                <span class="font-mono text-[11px] text-slate-500 ml-1">(Atk ${a.bajasAtaquePct || 0}%, Def +${a.bajasDefensaPct || 0}%)</span>
-              </div>
+              ${injuriesH.length > 0 ? `
+                <div class="text-[11px] text-slate-400 border-t border-[#1f2937] pt-1.5">
+                  <span class="text-amber-400 font-semibold">Bajas:</span> ${escapeHtml(injuriesH.join(", "))}
+                </div>
+              ` : ""}
             </div>
-          </div>
 
-          <!-- Clima y Diferencial Elo -->
-          <div class="flex flex-wrap items-center gap-2 text-xs">
-            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-slate-900 border border-slate-800 text-slate-300">
-              <span class="text-amber-400 font-semibold">Clima:</span> ${escapeHtml(ctx.clima || 'Estándar')}
-              <span class="font-mono text-slate-400">(${(ctx.modificadorGoles || 0) >= 0 ? '+' : ''}${((ctx.modificadorGoles || 0) * 100).toFixed(0)}% goles)</span>
-            </span>
-            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-slate-900 border border-slate-800 text-slate-300 font-mono">
-              Δ Elo: <span class="${analysis.eloDiff >= 0 ? 'text-emerald-400' : 'text-cyan-400'} font-bold">${analysis.eloDiff >= 0 ? '+' : ''}${analysis.eloDiff}</span>
-            </span>
+            <!-- Visita -->
+            <div class="p-3.5 rounded-xl bg-[#0b0f19] border border-[#1f2937] space-y-2.5">
+              <div class="flex items-center justify-between gap-2">
+                <span class="text-xs font-bold uppercase tracking-wider text-sky-400 truncate">${escapeHtml(m.awayTeam)}</span>
+                <div class="flex items-center gap-1.5 flex-shrink-0">
+                  <span class="px-2 py-0.5 rounded bg-slate-800 text-white font-mono text-[11px] font-semibold">Elo ${analysis.eloA}</span>
+                  <span class="px-2 py-0.5 rounded font-mono text-[11px] ${
+                    analysis.restA <= 3
+                      ? "bg-red-500/15 text-red-300 border border-red-500/30 font-semibold"
+                      : analysis.restA === 4
+                        ? "bg-amber-500/15 text-amber-300 border border-amber-500/30"
+                        : "bg-slate-800/80 text-slate-400"
+                  }">${analysis.restA}d desc.</span>
+                </div>
+              </div>
+              <div class="flex flex-wrap items-center justify-between gap-2 text-xs">
+                <div class="flex items-center gap-1">${renderFormBadges(ctx.awayForm)}</div>
+                <div class="font-mono text-[11px] text-slate-300 tabular-nums">
+                  GF/GA: <span class="text-white">${fmtNum(s.awayGoalsFor || 0)} / ${fmtNum(s.awayGoalsAgainst || 0)}</span>
+                </div>
+              </div>
+              ${injuriesA.length > 0 ? `
+                <div class="text-[11px] text-slate-400 border-t border-[#1f2937] pt-1.5">
+                  <span class="text-amber-400 font-semibold">Bajas:</span> ${escapeHtml(injuriesA.join(", "))}
+                </div>
+              ` : ""}
+            </div>
           </div>
         </div>
 
         <!-- 2. SIMULADOR "WHAT-IF" EN VIVO -->
-        <div class="rounded-2xl bg-[#111827] border ${isSimActive ? 'border-amber-500/50' : 'border-slate-800'} p-5 shadow-xl">
+        <div class="rounded-2xl bg-[#111827] border ${simActive ? "border-amber-500/50" : "border-[#1f2937]"} p-5 shadow-xl">
           <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
             <div class="flex items-center gap-2">
               <h3 class="text-sm sm:text-base font-bold text-white">Simulador "What-If" en Vivo</h3>
-              ${isSimActive ? `<span class="px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-400 border border-amber-500/30 text-[10px] font-mono font-bold uppercase">Simulación Activa</span>` : ''}
+              ${simActive ? `<span class="px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-400 border border-amber-500/30 text-[10px] font-mono font-bold uppercase">Simulación Activa</span>` : ""}
             </div>
-            <button id="btnResetWhatIf" type="button" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-medium transition cursor-pointer">
-              Resetear Sliders
+            <button id="btnResetWhatIf" type="button" class="px-3 py-1.5 rounded-lg bg-[#0b0f19] hover:bg-slate-800 text-slate-200 border border-[#1f2937] text-xs font-medium transition cursor-pointer">
+              Resetear
             </button>
           </div>
 
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
-            <!-- Slider Ataque Local -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+            <!-- Bajas Local % -->
             <div class="space-y-1.5">
               <div class="flex justify-between text-xs">
-                <label for="wiAtkH" class="text-slate-300 font-medium">Ajuste Ataque ${escapeHtml(m.local)}</label>
-                <span class="font-mono font-bold ${wi.atkH > 0 ? 'text-emerald-400' : wi.atkH < 0 ? 'text-red-400' : 'text-slate-400'}">${wi.atkH > 0 ? '+' : ''}${wi.atkH}%</span>
+                <label for="wiInjH" class="text-slate-300 font-medium">Bajas Local</label>
+                <span class="font-mono font-bold ${wi.injHome > 0 ? "text-red-400" : "text-slate-400"}">-${fmtNum(wi.injHome, 1)}%</span>
               </div>
-              <input id="wiAtkH" type="range" min="-30" max="30" step="1" value="${wi.atkH}" class="w-full" />
+              <input id="wiInjH" type="range" min="0" max="25" step="0.5" value="${wi.injHome}" class="w-full" />
             </div>
 
-            <!-- Slider Ataque Visita -->
+            <!-- Bajas Visita % -->
             <div class="space-y-1.5">
               <div class="flex justify-between text-xs">
-                <label for="wiAtkA" class="text-slate-300 font-medium">Ajuste Ataque ${escapeHtml(m.visitante)}</label>
-                <span class="font-mono font-bold ${wi.atkA > 0 ? 'text-cyan-400' : wi.atkA < 0 ? 'text-red-400' : 'text-slate-400'}">${wi.atkA > 0 ? '+' : ''}${wi.atkA}%</span>
+                <label for="wiInjA" class="text-slate-300 font-medium">Bajas Visita</label>
+                <span class="font-mono font-bold ${wi.injAway > 0 ? "text-red-400" : "text-slate-400"}">-${fmtNum(wi.injAway, 1)}%</span>
               </div>
-              <input id="wiAtkA" type="range" min="-30" max="30" step="1" value="${wi.atkA}" class="w-full" />
+              <input id="wiInjA" type="range" min="0" max="25" step="0.5" value="${wi.injAway}" class="w-full" />
             </div>
 
-            <!-- Slider Clima / Ritmo -->
+            <!-- Motivación Local % -->
             <div class="space-y-1.5">
               <div class="flex justify-between text-xs">
-                <label for="wiClima" class="text-slate-300 font-medium">Modificador Clima / Ritmo</label>
-                <span class="font-mono font-bold ${wi.clima > 0 ? 'text-amber-400' : wi.clima < 0 ? 'text-red-400' : 'text-slate-400'}">${wi.clima > 0 ? '+' : ''}${wi.clima}%</span>
+                <label for="wiMotH" class="text-slate-300 font-medium">Motiv. Local</label>
+                <span class="font-mono font-bold ${wi.motHome > 0 ? "text-emerald-400" : wi.motHome < 0 ? "text-red-400" : "text-slate-400"}">${wi.motHome > 0 ? "+" : ""}${wi.motHome}%</span>
               </div>
-              <input id="wiClima" type="range" min="-30" max="30" step="1" value="${wi.clima}" class="w-full" />
+              <input id="wiMotH" type="range" min="-15" max="15" step="1" value="${wi.motHome}" class="w-full" />
+            </div>
+
+            <!-- Motivación Visita % -->
+            <div class="space-y-1.5">
+              <div class="flex justify-between text-xs">
+                <label for="wiMotA" class="text-slate-300 font-medium">Motiv. Visita</label>
+                <span class="font-mono font-bold ${wi.motAway > 0 ? "text-sky-400" : wi.motAway < 0 ? "text-red-400" : "text-slate-400"}">${wi.motAway > 0 ? "+" : ""}${wi.motAway}%</span>
+              </div>
+              <input id="wiMotA" type="range" min="-15" max="15" step="1" value="${wi.motAway}" class="w-full" />
+            </div>
+
+            <!-- Factor Clima -->
+            <div class="space-y-1.5">
+              <div class="flex justify-between text-xs">
+                <label for="wiWeather" class="text-slate-300 font-medium">Factor Clima</label>
+                <span class="font-mono font-bold ${wi.weather < 1 ? "text-amber-400" : wi.weather > 1 ? "text-emerald-400" : "text-slate-400"}">${fmtNum(wi.weather, 2)}x</span>
+              </div>
+              <input id="wiWeather" type="range" min="0.80" max="1.10" step="0.01" value="${wi.weather}" class="w-full" />
             </div>
           </div>
         </div>
 
-        <!-- 3. TABLA COMPLETA DE MERCADOS Y VALUE BETS -->
-        <div class="rounded-2xl bg-[#111827] border border-slate-800 shadow-xl overflow-hidden">
-          <div class="px-5 py-4 border-b border-slate-800 flex flex-wrap items-center justify-between gap-2">
+        <!-- 3. TABLA COMPLETA DE MERCADOS (CON CUOTA CASA EDITABLE EN VIVO) -->
+        <div class="rounded-2xl bg-[#111827] border border-[#1f2937] shadow-xl overflow-hidden">
+          <div class="px-5 py-4 border-b border-[#1f2937] flex flex-wrap items-center justify-between gap-2">
             <div>
-              <h3 class="text-sm sm:text-base font-bold text-white">Mercados Derivados, EV% y Criterio de Kelly</h3>
-              <p class="text-xs text-slate-400">Las filas resaltadas en esmeralda superan el umbral mínimo de EV (${state.config.minEvPct}%).</p>
+              <h3 class="text-sm sm:text-base font-bold text-white">Tabla de Mercados, EV% y Stake de Kelly</h3>
+              <p class="text-xs text-slate-400">Edita cualquier <span class="text-white font-medium">Cuota Casa</span> para probar en vivo la cuota de tu casa de apuestas. Tope Kelly: 15%.</p>
             </div>
-            <span class="text-xs font-mono text-slate-400">Bankroll: <strong class="text-white">${fmtMoney(state.config.bankroll)}</strong> · Kelly ${state.config.kellyFraction}x</span>
+            <div class="flex items-center gap-2">
+              ${hasCustomOdds ? `
+                <button id="btnResetCustomOdds" type="button" class="px-2.5 py-1 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30 text-[11px] font-mono transition cursor-pointer">
+                  Restaurar cuotas JSON
+                </button>
+              ` : ""}
+              <span class="text-xs font-mono text-slate-400">Bankroll <strong class="text-white">${fmtMoney(state.config.bankroll)}</strong> · ${state.config.kellyFraction}x</span>
+            </div>
           </div>
 
           <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse">
+            <table class="w-full text-left border-collapse min-w-[660px]">
               <thead>
-                <tr class="bg-slate-900/70 text-[11px] font-semibold uppercase tracking-wider text-slate-400 border-b border-slate-800">
+                <tr class="bg-[#0b0f19]/70 text-[11px] font-semibold uppercase tracking-wider text-slate-400 border-b border-[#1f2937]">
                   <th class="py-3 px-4">Mercado</th>
                   <th class="py-3 px-3 text-right">Prob. Modelo</th>
                   <th class="py-3 px-3 text-right">Cuota Justa</th>
-                  <th class="py-3 px-3 text-right">Prob. Implícita</th>
                   <th class="py-3 px-3 text-right">Cuota Casa</th>
                   <th class="py-3 px-3 text-right">EV %</th>
                   <th class="py-3 px-3 text-right">Kelly %</th>
-                  <th class="py-3 px-4 text-right">Monto Sugerido</th>
+                  <th class="py-3 px-4 text-right">Stake ($)</th>
                 </tr>
               </thead>
-              <tbody class="divide-y divide-slate-800/70 text-sm">
+              <tbody id="marketsTableBody" class="divide-y divide-[#1f2937]/80 text-sm">
                 ${analysis.markets.map(mkt => {
                   const rowHighlight = mkt.isValue
-                    ? 'bg-emerald-500/10 hover:bg-emerald-500/15'
-                    : 'hover:bg-slate-800/40';
+                    ? "bg-emerald-500/10 hover:bg-emerald-500/15"
+                    : "hover:bg-slate-800/40";
                   const evColor = !mkt.hasOdd
-                    ? 'text-slate-500'
+                    ? "text-slate-500"
                     : mkt.isValue
-                      ? 'text-emerald-400 font-bold'
+                      ? "text-emerald-400 font-bold"
                       : mkt.evPct > 0
-                        ? 'text-emerald-300/80'
-                        : 'text-red-400/80';
+                        ? "text-emerald-300/80"
+                        : "text-red-400/80";
 
                   return `
-                    <tr class="${rowHighlight} transition">
+                    <tr data-market-row="${escapeHtml(mkt.key)}" class="${rowHighlight} transition">
                       <td class="py-2.5 px-4">
                         <div class="flex items-center gap-2">
-                          <span class="text-[10px] font-mono uppercase px-1.5 py-0.5 rounded bg-slate-800 text-slate-400">${escapeHtml(mkt.group)}</span>
-                          <span class="font-medium ${mkt.isValue ? 'text-white font-semibold' : 'text-slate-200'}">${escapeHtml(mkt.name)}</span>
+                          <span class="text-[10px] font-mono uppercase px-1.5 py-0.5 rounded bg-[#0b0f19] text-slate-400 border border-[#1f2937]">${escapeHtml(mkt.group)}</span>
+                          <span class="${mkt.isValue ? "text-white font-semibold" : "text-slate-200 font-medium"}">${escapeHtml(mkt.name)}</span>
                         </div>
                       </td>
                       <td class="py-2.5 px-3 text-right font-mono tabular-nums text-white">${fmtPct(mkt.prob, 1)}</td>
                       <td class="py-2.5 px-3 text-right font-mono tabular-nums text-slate-400">${fmtNum(mkt.fairOdd, 2)}</td>
-                      <td class="py-2.5 px-3 text-right font-mono tabular-nums text-slate-400">${mkt.hasOdd ? fmtPct(mkt.impliedProb, 1) : '—'}</td>
-                      <td class="py-2.5 px-3 text-right font-mono tabular-nums font-bold text-slate-100">${mkt.hasOdd ? fmtNum(mkt.odd, 2) : '—'}</td>
-                      <td class="py-2.5 px-3 text-right font-mono tabular-nums ${evColor}">
-                        ${mkt.hasOdd ? `${mkt.evPct >= 0 ? '+' : ''}${fmtNum(mkt.evPct, 2)}%` : '—'}
+                      <td class="py-2 px-3 text-right">
+                        <input
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          placeholder="—"
+                          value="${mkt.hasOdd ? mkt.odd : ""}"
+                          data-odd-key="${escapeHtml(mkt.key)}"
+                          class="odd-input w-20 px-2 py-1 text-right font-mono tabular-nums text-xs sm:text-sm rounded-lg bg-[#0b0f19] border border-[#1f2937] text-white focus:outline-none focus:border-sky-400"
+                        />
                       </td>
-                      <td class="py-2.5 px-3 text-right font-mono tabular-nums ${mkt.kellyPct > 0 ? 'text-cyan-400' : 'text-slate-500'}">
-                        ${mkt.hasOdd ? `${fmtNum(mkt.kellyPct, 2)}%` : '—'}
+                      <td data-cell-ev class="py-2.5 px-3 text-right font-mono tabular-nums ${evColor}">
+                        ${mkt.hasOdd ? `${mkt.evPct >= 0 ? "+" : ""}${fmtNum(mkt.evPct, 2)}%` : "—"}
                       </td>
-                      <td class="py-2.5 px-4 text-right font-mono tabular-nums font-bold ${mkt.isValue ? 'text-emerald-400' : 'text-slate-400'}">
-                        ${mkt.hasOdd ? fmtMoney(mkt.stakeAmount) : '—'}
+                      <td data-cell-kelly class="py-2.5 px-3 text-right font-mono tabular-nums ${mkt.hasOdd && mkt.kellyPct > 0 ? "text-sky-400" : "text-slate-500"}">
+                        ${mkt.hasOdd ? `${fmtNum(mkt.kellyPct, 2)}%` : "—"}
+                      </td>
+                      <td data-cell-stake class="py-2.5 px-4 text-right font-mono tabular-nums font-bold ${mkt.isValue ? "text-emerald-400" : "text-slate-400"}">
+                        ${mkt.hasOdd ? fmtMoney(mkt.stakeAmount) : "—"}
                       </td>
                     </tr>
                   `;
-                }).join('')}
+                }).join("")}
               </tbody>
             </table>
           </div>
         </div>
 
-        <!-- 4. MATRIZ DE MARCADORES EXACTOS (HEATMAP 0-5) + TOP 5 MARCADORES -->
+        <!-- 4. HEATMAP DE MARCADORES EXACTOS (0-5) + TOP 5 MARCADORES -->
         <div class="grid grid-cols-1 xl:grid-cols-12 gap-6">
-          <!-- Heatmap -->
-          <div class="xl:col-span-8 rounded-2xl bg-[#111827] border border-slate-800 p-5 shadow-xl">
+          <div class="xl:col-span-8 rounded-2xl bg-[#111827] border border-[#1f2937] p-5 shadow-xl">
             <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
               <div>
                 <h3 class="text-sm sm:text-base font-bold text-white">Matriz de Marcadores Exactos (Dixon-Coles)</h3>
-                <p class="text-xs text-slate-400">Filas: <span class="text-emerald-400">${escapeHtml(m.local)}</span> · Columnas: <span class="text-cyan-400">${escapeHtml(m.visitante)}</span> (pasa el cursor para cuota justa)</p>
+                <p class="text-xs text-slate-400">Filas: <span class="text-emerald-400">${escapeHtml(m.homeTeam)}</span> · Columnas: <span class="text-sky-400">${escapeHtml(m.awayTeam)}</span></p>
               </div>
-              <span class="text-[11px] font-mono text-slate-400">ρ = ${fmtNum(state.config.rho, 2)}</span>
+              <span class="text-[11px] font-mono text-purple-300 bg-purple-500/10 border border-purple-500/30 px-2 py-0.5 rounded">ρ = ${fmtNum(state.config.rho, 2)}</span>
             </div>
 
             <div class="overflow-x-auto">
-              <table class="w-full border-collapse table-fixed min-w-[360px]">
+              <table class="w-full border-collapse table-fixed min-w-[340px]">
                 <thead>
                   <tr>
-                    <th class="p-2 text-[10px] font-mono uppercase text-slate-400 bg-slate-900/90 border border-slate-800 w-12">L \ V</th>
-                    <th class="p-2 text-xs font-mono text-cyan-400 bg-slate-900/70 border border-slate-800">0</th>
-                    <th class="p-2 text-xs font-mono text-cyan-400 bg-slate-900/70 border border-slate-800">1</th>
-                    <th class="p-2 text-xs font-mono text-cyan-400 bg-slate-900/70 border border-slate-800">2</th>
-                    <th class="p-2 text-xs font-mono text-cyan-400 bg-slate-900/70 border border-slate-800">3</th>
-                    <th class="p-2 text-xs font-mono text-cyan-400 bg-slate-900/70 border border-slate-800">4</th>
-                    <th class="p-2 text-xs font-mono text-cyan-400 bg-slate-900/70 border border-slate-800">5</th>
+                    <th class="p-2 text-[10px] font-mono uppercase text-slate-400 bg-[#0b0f19] border border-[#1f2937] w-12">L \ V</th>
+                    <th class="p-2 text-xs font-mono text-sky-400 bg-[#0b0f19] border border-[#1f2937]">0</th>
+                    <th class="p-2 text-xs font-mono text-sky-400 bg-[#0b0f19] border border-[#1f2937]">1</th>
+                    <th class="p-2 text-xs font-mono text-sky-400 bg-[#0b0f19] border border-[#1f2937]">2</th>
+                    <th class="p-2 text-xs font-mono text-sky-400 bg-[#0b0f19] border border-[#1f2937]">3</th>
+                    <th class="p-2 text-xs font-mono text-sky-400 bg-[#0b0f19] border border-[#1f2937]">4</th>
+                    <th class="p-2 text-xs font-mono text-sky-400 bg-[#0b0f19] border border-[#1f2937]">5</th>
                   </tr>
                 </thead>
                 <tbody>
-                  ${heatmapRowsHtml}
+                  ${heatmapRows}
                 </tbody>
               </table>
             </div>
           </div>
 
-          <!-- Top 5 Marcadores Más Probables -->
-          <div class="xl:col-span-4 rounded-2xl bg-[#111827] border border-slate-800 p-5 shadow-xl flex flex-col justify-between">
-            <div>
-              <h3 class="text-sm sm:text-base font-bold text-white mb-1">Top 5 Marcadores Exactos</h3>
-              <p class="text-xs text-slate-400 mb-4">Resultados con mayor densidad de probabilidad.</p>
+          <div class="xl:col-span-4 rounded-2xl bg-[#111827] border border-[#1f2937] p-5 shadow-xl">
+            <h3 class="text-sm sm:text-base font-bold text-white mb-1">Top 5 Marcadores Exactos</h3>
+            <p class="text-xs text-slate-400 mb-4">Resultados con mayor densidad de probabilidad.</p>
 
-              <div class="space-y-3">
-                ${analysis.topScores.map((s, idx) => {
-                  const pct = s.prob * 100;
-                  const barW = Math.min(100, (s.prob / analysis.topScores[0].prob) * 100);
-                  const fairOdd = (1 / s.prob).toFixed(2);
-                  return `
-                    <div class="p-3 rounded-xl bg-[#0b1120] border border-slate-800/90">
-                      <div class="flex items-center justify-between mb-1.5">
-                        <div class="flex items-center gap-2">
-                          <span class="w-5 h-5 rounded-md bg-slate-800 text-[11px] font-mono text-slate-400 flex items-center justify-center">#${idx + 1}</span>
-                          <span class="font-mono font-bold text-white text-base">${s.home} - ${s.away}</span>
-                        </div>
-                        <div class="text-right font-mono tabular-nums">
-                          <span class="text-emerald-400 font-bold text-sm">${pct.toFixed(1)}%</span>
-                          <span class="text-[11px] text-slate-400 ml-1.5">@${fairOdd}</span>
-                        </div>
+            <div class="space-y-3">
+              ${analysis.topScores.map((sc, idx) => {
+                const pct = sc.prob * 100;
+                const barW = Math.min(100, (sc.prob / analysis.topScores[0].prob) * 100);
+                const fairOdd = (1 / sc.prob).toFixed(2);
+                return `
+                  <div class="p-3 rounded-xl bg-[#0b0f19] border border-[#1f2937]">
+                    <div class="flex items-center justify-between mb-1.5">
+                      <div class="flex items-center gap-2">
+                        <span class="w-5 h-5 rounded-md bg-slate-800 text-[11px] font-mono text-slate-400 flex items-center justify-center">#${idx + 1}</span>
+                        <span class="font-mono font-bold text-white text-base">${sc.home} - ${sc.away}</span>
                       </div>
-                      <div class="w-full h-1.5 rounded-full bg-slate-800 overflow-hidden">
-                        <div style="width: ${barW}%" class="h-full bg-gradient-to-r from-emerald-500 to-cyan-400 rounded-full"></div>
+                      <div class="text-right font-mono tabular-nums">
+                        <span class="text-emerald-400 font-bold text-sm">${pct.toFixed(1)}%</span>
+                        <span class="text-[11px] text-slate-400 ml-1.5">@${fairOdd}</span>
                       </div>
                     </div>
-                  `;
-                }).join('')}
-              </div>
+                    <div class="w-full h-1.5 rounded-full bg-slate-800 overflow-hidden">
+                      <div style="width: ${barW}%" class="h-full bg-gradient-to-r from-emerald-500 to-sky-400 rounded-full"></div>
+                    </div>
+                  </div>
+                `;
+              }).join("")}
             </div>
           </div>
         </div>
       `;
 
-      // Enlazar eventos de los sliders What-If recién renderizados
-      const bindWhatIfSlider = (id, key) => {
+      // Enlazar sliders What-If
+      const bindSlider = (id, prop) => {
         const el = document.getElementById(id);
         if (!el) return;
-        el.addEventListener('input', e => {
-          getWhatIf(m.id)[key] = Number(e.target.value);
+        el.addEventListener("input", e => {
+          getWhatIf(m)[prop] = Number(e.target.value);
           renderAll();
         });
       };
 
-      bindWhatIfSlider('wiAtkH', 'atkH');
-      bindWhatIfSlider('wiAtkA', 'atkA');
-      bindWhatIfSlider('wiClima', 'clima');
+      bindSlider("wiInjH", "injHome");
+      bindSlider("wiInjA", "injAway");
+      bindSlider("wiMotH", "motHome");
+      bindSlider("wiMotA", "motAway");
+      bindSlider("wiWeather", "weather");
 
-      const btnReset = document.getElementById('btnResetWhatIf');
-      if (btnReset) {
-        btnReset.addEventListener('click', () => {
-          state.whatIfByMatch[m.id] = { atkH: 0, atkA: 0, clima: 0 };
+      const btnResetWi = document.getElementById("btnResetWhatIf");
+      if (btnResetWi) {
+        btnResetWi.addEventListener("click", () => {
+          delete state.whatIfByMatch[m.id];
           renderAll();
-          showToast('Simulación What-If reseteada', 'info');
+          showToast("Simulación What-If reseteada a los valores del JSON.", "info");
         });
       }
+
+      const btnResetOdds = document.getElementById("btnResetCustomOdds");
+      if (btnResetOdds) {
+        btnResetOdds.addEventListener("click", () => {
+          delete state.customOddsByMatch[m.id];
+          renderAll();
+          showToast("Cuotas restauradas al JSON original.", "info");
+        });
+      }
+
+      // Edición en vivo de Cuota Casa sin perder el foco del input
+      panel.querySelectorAll(".odd-input").forEach(input => {
+        input.addEventListener("input", e => {
+          const key = e.target.dataset.oddKey;
+          const val = parseFloat(e.target.value);
+          if (!state.customOddsByMatch[m.id]) state.customOddsByMatch[m.id] = {};
+          state.customOddsByMatch[m.id][key] = isValidOdd(val) ? val : 0;
+
+          // Recalcular solo la fila y el radar/lista sin destruir el input activo
+          const updatedAnalysis = analyzeMatch(m);
+          const mkt = updatedAnalysis.markets.find(x => x.key === key);
+          const row = panel.querySelector(`tr[data-market-row="${key}"]`);
+          if (row && mkt) {
+            row.className = `${mkt.isValue ? "bg-emerald-500/10 hover:bg-emerald-500/15" : "hover:bg-slate-800/40"} transition`;
+            const evCell = row.querySelector("[data-cell-ev]");
+            const kellyCell = row.querySelector("[data-cell-kelly]");
+            const stakeCell = row.querySelector("[data-cell-stake]");
+
+            evCell.className = `py-2.5 px-3 text-right font-mono tabular-nums ${
+              !mkt.hasOdd ? "text-slate-500" : mkt.isValue ? "text-emerald-400 font-bold" : mkt.evPct > 0 ? "text-emerald-300/80" : "text-red-400/80"
+            }`;
+            evCell.textContent = mkt.hasOdd ? `${mkt.evPct >= 0 ? "+" : ""}${fmtNum(mkt.evPct, 2)}%` : "—";
+
+            kellyCell.className = `py-2.5 px-3 text-right font-mono tabular-nums ${mkt.hasOdd && mkt.kellyPct > 0 ? "text-sky-400" : "text-slate-500"}`;
+            kellyCell.textContent = mkt.hasOdd ? `${fmtNum(mkt.kellyPct, 2)}%` : "—";
+
+            stakeCell.className = `py-2.5 px-4 text-right font-mono tabular-nums font-bold ${mkt.isValue ? "text-emerald-400" : "text-slate-400"}`;
+            stakeCell.textContent = mkt.hasOdd ? fmtMoney(mkt.stakeAmount) : "—";
+          }
+
+          // Actualizar Radar y Lista izquierda en tiempo real
+          const allAnalyses = getFilteredMatches().map(item => analyzeMatch(item));
+          renderRadar(allAnalyses);
+          renderMatchList(allAnalyses);
+        });
+      });
     }
 
     /***************************************************************************
-     * 6. VALIDACIÓN Y CARGA DE JSON (ARCHIVO, DRAG & DROP, MODAL, DESCARGA)
+     * 6. CARGA AUTOMÁTICA (FETCH) Y VALIDACIÓN DE JSON
      ***************************************************************************/
-    function validateAndLoadJson(rawText) {
-      let parsed;
-      try {
-        parsed = JSON.parse(rawText);
-      } catch (err) {
-        throw new Error(`JSON inválido: ${err.message}`);
-      }
+    function applyPayload(parsed, mode = "manual") {
+      const list = Array.isArray(parsed)
+        ? parsed
+        : (parsed && Array.isArray(parsed.matches) ? parsed.matches : null);
 
-      // Permitir tanto un array directo como un objeto { partidos: [...] }
-      const list = Array.isArray(parsed) ? parsed : (Array.isArray(parsed.partidos) ? parsed.partidos : null);
       if (!list || list.length === 0) {
-        throw new Error('El JSON debe ser un arreglo de partidos (o un objeto con la propiedad "partidos") con al menos 1 elemento.');
+        throw new Error('El JSON debe contener un arreglo "matches" con al menos 1 partido.');
       }
 
-      // Validación mínima de estructura por partido
-      list.forEach((item, index) => {
-        if (!item.local || !item.visitante || !item.equipoLocal || !item.equipoVisita) {
-          throw new Error(`El partido #${index + 1} requiere las propiedades: local, visitante, equipoLocal y equipoVisita.`);
+      list.forEach((m, i) => {
+        if (!m.homeTeam || !m.awayTeam || !m.stats) {
+          throw new Error(`El partido #${i + 1} requiere homeTeam, awayTeam y stats.`);
         }
-        if (!item.id) {
-          item.id = `MATCH-${index + 1}-${Date.now()}`;
-        }
+        if (!m.id) m.id = `match-${i + 1}-${Date.now()}`;
+        if (!m.league) m.league = "Liga General";
+        if (!m.context) m.context = {};
+        if (!m.odds) m.odds = {};
       });
 
+      state.sourceMode = mode;
+      state.updatedAt = (!Array.isArray(parsed) && parsed.updatedAt) ? parsed.updatedAt : new Date().toISOString();
+      state.rawPayload = Array.isArray(parsed)
+        ? { updatedAt: state.updatedAt, date: state.updatedAt.slice(0, 10), matches: list }
+        : parsed;
       state.matches = list;
       state.whatIfByMatch = {};
+      state.customOddsByMatch = {};
       state.selectedMatchId = list[0].id;
+
+      populateLeagueFilter();
+      updateSourceBadge();
       renderAll();
-      showToast(`Datos cargados correctamente: ${list.length} partido(s) analizados.`, 'success');
     }
 
-    function handleFileObject(file) {
+    /**
+     * Auto-carga ./partidos_hoy.json con fallback limpio a MODO DEMO
+     */
+    async function loadLiveJson(showFeedback = false) {
+      const icon = document.getElementById("reloadIcon");
+      if (icon) icon.classList.add("animate-spin");
+
+      try {
+        const response = await fetch(`./partidos_hoy.json?t=${Date.now()}`, { cache: "no-store" });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const data = await response.json();
+        const matches = Array.isArray(data) ? data : data.matches;
+
+        if (!Array.isArray(matches) || matches.length === 0) {
+          throw new Error("partidos_hoy.json no contiene partidos (0 eventos).");
+        }
+
+        applyPayload(data, "live");
+        if (showFeedback) {
+          showToast(`JSON en vivo actualizado: ${matches.length} partidos cargados.`, "success");
+        }
+      } catch (err) {
+        applyPayload(JSON.parse(JSON.stringify(DEMO_PAYLOAD)), "demo");
+        if (showFeedback) {
+          showToast(`Sin partidos_hoy.json (${err.message}). Mostrando Modo Demo.`, "warn");
+        }
+      } finally {
+        if (icon) setTimeout(() => icon.classList.remove("animate-spin"), 350);
+      }
+    }
+
+    function handleUploadedFile(file) {
       if (!file) return;
       const reader = new FileReader();
       reader.onload = e => {
         try {
-          validateAndLoadJson(e.target.result);
+          const parsed = JSON.parse(e.target.result);
+          applyPayload(parsed, "manual");
+          showToast(`Archivo cargado: ${state.matches.length} partido(s) analizados.`, "success");
         } catch (err) {
-          showToast(err.message, 'error');
+          showToast(`Error al leer JSON: ${err.message}`, "error");
         }
       };
-      reader.onerror = () => showToast('No se pudo leer el archivo seleccionado.', 'error');
+      reader.onerror = () => showToast("No se pudo leer el archivo.", "error");
       reader.readAsText(file);
     }
 
     /***************************************************************************
      * 7. EVENT LISTENERS GLOBALES E INICIALIZACIÓN
      ***************************************************************************/
-    function initEventListeners() {
-      // Controles de configuración global
-      document.getElementById('cfgBankroll').addEventListener('input', e => {
+    function initEvents() {
+      // Parámetros globales
+      document.getElementById("cfgBankroll").addEventListener("input", e => {
         state.config.bankroll = Math.max(1, Number(e.target.value) || 1000);
         renderAll();
       });
 
-      document.getElementById('cfgKelly').addEventListener('change', e => {
+      document.getElementById("cfgKelly").addEventListener("change", e => {
         state.config.kellyFraction = Number(e.target.value);
         renderAll();
       });
 
-      document.getElementById('cfgMinEv').addEventListener('input', e => {
+      document.getElementById("cfgMinEv").addEventListener("input", e => {
         state.config.minEvPct = Math.max(0, Number(e.target.value) || 0);
         renderAll();
       });
 
-      document.getElementById('cfgWeightXg').addEventListener('input', e => {
-        const val = Number(e.target.value);
-        state.config.weightXg = val / 100;
-        document.getElementById('valWeightXg').textContent = `${val}%`;
+      document.getElementById("cfgLeagueFilter").addEventListener("change", e => {
+        state.leagueFilter = e.target.value;
         renderAll();
       });
 
-      document.getElementById('cfgWeightForm').addEventListener('input', e => {
-        const val = Number(e.target.value);
-        state.config.weightForm = val / 100;
-        document.getElementById('valWeightForm').textContent = `${val}%`;
+      document.getElementById("cfgWeightXg").addEventListener("input", e => {
+        const v = Number(e.target.value);
+        state.config.weightXg = v / 100;
+        document.getElementById("valWeightXg").textContent = `${v}%`;
         renderAll();
       });
 
-      document.getElementById('cfgWeightPinnacle').addEventListener('input', e => {
-        const val = Number(e.target.value);
-        state.config.weightPinnacle = val / 100;
-        document.getElementById('valWeightPinnacle').textContent = `${val}%`;
+      document.getElementById("cfgWeightForm").addEventListener("input", e => {
+        const v = Number(e.target.value);
+        state.config.weightForm = v / 100;
+        document.getElementById("valWeightForm").textContent = `${v}%`;
         renderAll();
       });
 
-      document.getElementById('cfgRho').addEventListener('input', e => {
-        const val = Number(e.target.value);
-        state.config.rho = val;
-        document.getElementById('valRho').textContent = val.toFixed(2);
+      document.getElementById("cfgWeightPinnacle").addEventListener("input", e => {
+        const v = Number(e.target.value);
+        state.config.weightPinnacle = v / 100;
+        document.getElementById("valWeightPinnacle").textContent = `${v}%`;
         renderAll();
       });
 
-      // Toggle panel de calibración
-      document.getElementById('btnToggleConfig').addEventListener('click', () => {
-        document.getElementById('globalConfigPanel').classList.toggle('hidden');
+      document.getElementById("cfgRho").addEventListener("input", e => {
+        const v = Number(e.target.value);
+        state.config.rho = v;
+        document.getElementById("valRho").textContent = v.toFixed(2);
+        renderAll();
       });
+
+      // Toggle barra de parámetros
+      document.getElementById("btnToggleConfig").addEventListener("click", () => {
+        document.getElementById("globalConfigPanel").classList.toggle("hidden");
+      });
+
+      // Recargar JSON en vivo
+      document.getElementById("btnReloadJson").addEventListener("click", () => loadLiveJson(true));
 
       // Subir archivo JSON
-      const fileInput = document.getElementById('jsonFileInput');
-      document.getElementById('btnUploadJson').addEventListener('click', () => fileInput.click());
-      fileInput.addEventListener('change', e => {
-        handleFileObject(e.target.files[0]);
-        e.target.value = '';
+      const fileInput = document.getElementById("jsonFileInput");
+      document.getElementById("btnUploadJson").addEventListener("click", () => fileInput.click());
+      fileInput.addEventListener("change", e => {
+        handleUploadedFile(e.target.files[0]);
+        e.target.value = "";
       });
 
-      // Soporte Drag & Drop global en la ventana
-      const dropOverlay = document.getElementById('dropOverlay');
-      let dragCounter = 0;
+      // Drag & Drop en toda la ventana
+      const dropOverlay = document.getElementById("dropOverlay");
+      let dragDepth = 0;
 
-      window.addEventListener('dragenter', e => {
+      window.addEventListener("dragenter", e => {
         e.preventDefault();
-        dragCounter++;
-        dropOverlay.classList.remove('hidden');
+        dragDepth++;
+        dropOverlay.classList.remove("hidden");
       });
-
-      window.addEventListener('dragover', e => {
+      window.addEventListener("dragover", e => e.preventDefault());
+      window.addEventListener("dragleave", e => {
         e.preventDefault();
-      });
-
-      window.addEventListener('dragleave', e => {
-        e.preventDefault();
-        dragCounter--;
-        if (dragCounter <= 0) {
-          dragCounter = 0;
-          dropOverlay.classList.add('hidden');
+        dragDepth--;
+        if (dragDepth <= 0) {
+          dragDepth = 0;
+          dropOverlay.classList.add("hidden");
         }
       });
-
-      window.addEventListener('drop', e => {
+      window.addEventListener("drop", e => {
         e.preventDefault();
-        dragCounter = 0;
-        dropOverlay.classList.add('hidden');
+        dragDepth = 0;
+        dropOverlay.classList.add("hidden");
         const file = e.dataTransfer?.files?.[0];
-        if (file) handleFileObject(file);
+        if (file) handleUploadedFile(file);
       });
 
-      // Descargar Plantilla JSON (partidos_hoy.json)
-      document.getElementById('btnDownloadTemplate').addEventListener('click', () => {
-        const dataStr = JSON.stringify(state.matches, null, 2);
-        const blob = new Blob([dataStr], { type: 'application/json' });
+      // Descargar Plantilla JSON
+      document.getElementById("btnDownloadTemplate").addEventListener("click", () => {
+        const exportObj = state.rawPayload || DEMO_PAYLOAD;
+        const blob = new Blob([JSON.stringify(exportObj, null, 2)], { type: "application/json" });
         const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
+        const a = document.createElement("a");
         a.href = url;
-        a.download = 'partidos_hoy.json';
+        a.download = "partidos_hoy.json";
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
-        showToast('Plantilla "partidos_hoy.json" descargada.', 'info');
+        showToast('Plantilla "partidos_hoy.json" descargada.', "info");
       });
 
-      // Modal Editor JSON en Vivo
-      const modal = document.getElementById('jsonModal');
-      const textarea = document.getElementById('jsonEditorTextarea');
-      const errorBox = document.getElementById('jsonErrorBox');
+      // Modal Editor JSON
+      const modal = document.getElementById("jsonModal");
+      const textarea = document.getElementById("jsonEditorTextarea");
+      const errBox = document.getElementById("jsonErrorBox");
 
       const openModal = () => {
-        errorBox.classList.add('hidden');
-        textarea.value = JSON.stringify(state.matches, null, 2);
-        modal.classList.remove('hidden');
+        errBox.classList.add("hidden");
+        textarea.value = JSON.stringify(state.rawPayload || DEMO_PAYLOAD, null, 2);
+        modal.classList.remove("hidden");
       };
+      const closeModal = () => modal.classList.add("hidden");
 
-      const closeModal = () => {
-        modal.classList.add('hidden');
-      };
-
-      document.getElementById('btnEditJson').addEventListener('click', openModal);
-      document.getElementById('btnCloseModal').addEventListener('click', closeModal);
-      document.getElementById('btnCancelModal').addEventListener('click', closeModal);
-
-      // Cerrar modal al hacer clic fuera
-      modal.addEventListener('click', e => {
+      document.getElementById("btnEditJson").addEventListener("click", openModal);
+      document.getElementById("btnCloseModal").addEventListener("click", closeModal);
+      document.getElementById("btnCancelModal").addEventListener("click", closeModal);
+      modal.addEventListener("click", e => {
         if (e.target === modal) closeModal();
       });
 
-      // Aplicar JSON editado
-      document.getElementById('btnApplyJson').addEventListener('click', () => {
+      document.getElementById("btnApplyJson").addEventListener("click", () => {
         try {
-          errorBox.classList.add('hidden');
-          validateAndLoadJson(textarea.value);
+          errBox.classList.add("hidden");
+          const parsed = JSON.parse(textarea.value);
+          applyPayload(parsed, "manual");
           closeModal();
+          showToast(`JSON aplicado: ${state.matches.length} partido(s) analizados.`, "success");
         } catch (err) {
-          errorBox.textContent = err.message;
-          errorBox.classList.remove('hidden');
+          errBox.textContent = err.message;
+          errBox.classList.remove("hidden");
         }
       });
 
-      // Formatear JSON en el editor
-      document.getElementById('btnFormatJson').addEventListener('click', () => {
+      document.getElementById("btnFormatJson").addEventListener("click", () => {
         try {
-          errorBox.classList.add('hidden');
-          const obj = JSON.parse(textarea.value);
-          textarea.value = JSON.stringify(obj, null, 2);
+          errBox.classList.add("hidden");
+          textarea.value = JSON.stringify(JSON.parse(textarea.value), null, 2);
         } catch (err) {
-          errorBox.textContent = `No se puede formatear: ${err.message}`;
-          errorBox.classList.remove('hidden');
+          errBox.textContent = `Error de formato: ${err.message}`;
+          errBox.classList.remove("hidden");
         }
       });
 
-      // Copiar JSON al portapapeles (compatible con iframes)
-      document.getElementById('btnCopyJson').addEventListener('click', () => {
+      document.getElementById("btnCopyJson").addEventListener("click", () => {
         textarea.select();
         try {
-          document.execCommand('copy');
-          showToast('JSON copiado al portapapeles.', 'info');
+          document.execCommand("copy");
+          showToast("JSON copiado al portapapeles.", "info");
         } catch {
-          showToast('Selecciona y copia el texto manualmente.', 'error');
+          showToast("Copia el contenido manualmente.", "error");
         }
       });
 
-      // Restaurar partidos demo
-      document.getElementById('btnResetDemo').addEventListener('click', () => {
-        textarea.value = JSON.stringify(DEFAULT_MATCHES, null, 2);
-        errorBox.classList.add('hidden');
-        showToast('Datos de demostración cargados en el editor. Pulsa "Aplicar" para guardar.', 'info');
+      document.getElementById("btnResetDemo").addEventListener("click", () => {
+        textarea.value = JSON.stringify(DEMO_PAYLOAD, null, 2);
+        errBox.classList.add("hidden");
+        showToast('Datos demo cargados en el editor. Pulsa "Aplicar".', "info");
       });
     }
 
-    // Arrancar la aplicación al cargar el DOM
-    document.addEventListener('DOMContentLoaded', () => {
-      initEventListeners();
-      renderAll();
+    // Arrancar la app e intentar auto-cargar ./partidos_hoy.json
+    document.addEventListener("DOMContentLoaded", () => {
+      initEvents();
+      loadLiveJson(false);
     });
   </script>
 </body>
