@@ -1,5 +1,4 @@
 import os
-import time
 import json
 import csv
 import io
@@ -9,40 +8,41 @@ from datetime import datetime, timezone, timedelta
 import requests
 
 # ==========================================
-# CONFIGURACIÓN PRINCIPAL
+# CONFIGURACIÓN PRINCIPAL (SIN API-FOOTBALL)
 # ==========================================
-APIFOOTBALL_KEY = os.environ.get("APIFOOTBALL_KEY", "")
 ODDS_API_KEY = os.environ.get("ODDS_API_KEY", "")
+FOOTBALL_DATA_KEY = os.environ.get("FOOTBALL_DATA_KEY", "")
 
-MAX_PARTIDOS_DIA = 15
+MAX_PARTIDOS_DIA = 20
 
-# Mapeo completo: API-Football ID -> Odds API -> ESPN Slug -> Promedios de liga
-LIGAS_OBJETIVO = {
+LIGAS_OBJETIVO = [
     # --- SUDAMÉRICA ---
-    128: {"nombre": "Liga Profesional Argentina", "odds_key": "soccer_argentina_primera_division", "espn": "arg.1",                 "avg_h": 1.28, "avg_a": 0.94},
-    13:  {"nombre": "Copa Libertadores",          "odds_key": "soccer_conmebol_copa_libertadores", "espn": "conmebol.libertadores", "avg_h": 1.50, "avg_a": 0.95},
-    11:  {"nombre": "Copa Sudamericana",          "odds_key": "soccer_conmebol_copa_sudamericana", "espn": "conmebol.sudamericana", "avg_h": 1.44, "avg_a": 0.96},
-    71:  {"nombre": "Brasileirão Serie A",        "odds_key": "soccer_brazil_campeonato",          "espn": "bra.1",                 "avg_h": 1.48, "avg_a": 1.02},
+    {"nombre": "Liga Profesional Argentina", "odds_key": "soccer_argentina_primera_division", "fd_code": None,  "espn": "arg.1",                 "avg_h": 1.28, "avg_a": 0.94},
+    {"nombre": "Copa Libertadores",          "odds_key": "soccer_conmebol_copa_libertadores", "fd_code": None,  "espn": "conmebol.libertadores", "avg_h": 1.50, "avg_a": 0.95},
+    {"nombre": "Copa Sudamericana",          "odds_key": "soccer_conmebol_copa_sudamericana", "fd_code": None,  "espn": "conmebol.sudamericana", "avg_h": 1.44, "avg_a": 0.96},
+    {"nombre": "Brasileirão Serie A",        "odds_key": "soccer_brazil_campeonato",          "fd_code": "BSA", "espn": "bra.1",                 "avg_h": 1.48, "avg_a": 1.02},
     # --- EUROPA ---
-    39:  {"nombre": "Premier League",             "odds_key": "soccer_epl",                        "espn": "eng.1",                 "avg_h": 1.62, "avg_a": 1.32},
-    140: {"nombre": "LaLiga",                     "odds_key": "soccer_spain_la_liga",              "espn": "esp.1",                 "avg_h": 1.48, "avg_a": 1.12},
-    135: {"nombre": "Serie A",                    "odds_key": "soccer_italy_serie_a",              "espn": "ita.1",                 "avg_h": 1.45, "avg_a": 1.15},
-    78:  {"nombre": "Bundesliga",                 "odds_key": "soccer_germany_bundesliga",         "espn": "ger.1",                 "avg_h": 1.75, "avg_a": 1.38},
-    61:  {"nombre": "Ligue 1",                    "odds_key": "soccer_france_ligue_one",           "espn": "fra.1",                 "avg_h": 1.52, "avg_a": 1.18},
-    2:   {"nombre": "Champions League",           "odds_key": "soccer_uefa_champs_league",         "espn": "uefa.champions",        "avg_h": 1.68, "avg_a": 1.30},
-}
+    {"nombre": "Premier League",             "odds_key": "soccer_epl",                        "fd_code": "PL",  "espn": "eng.1",                 "avg_h": 1.62, "avg_a": 1.32},
+    {"nombre": "LaLiga",                     "odds_key": "soccer_spain_la_liga",              "fd_code": "PD",  "espn": "esp.1",                 "avg_h": 1.48, "avg_a": 1.12},
+    {"nombre": "Serie A",                    "odds_key": "soccer_italy_serie_a",              "fd_code": "SA",  "espn": "ita.1",                 "avg_h": 1.45, "avg_a": 1.15},
+    {"nombre": "Bundesliga",                 "odds_key": "soccer_germany_bundesliga",         "fd_code": "BL1", "espn": "ger.1",                 "avg_h": 1.75, "avg_a": 1.38},
+    {"nombre": "Ligue 1",                    "odds_key": "soccer_france_ligue_one",           "fd_code": "FL1", "espn": "fra.1",                 "avg_h": 1.52, "avg_a": 1.18},
+    {"nombre": "Champions League",           "odds_key": "soccer_uefa_champs_league",         "fd_code": "CL",  "espn": "uefa.champions",        "avg_h": 1.68, "avg_a": 1.30},
+]
 
-HEADERS_FOOTBALL = {"x-apisports-key": APIFOOTBALL_KEY}
+HEADERS_FD = {"X-Auth-Token": FOOTBALL_DATA_KEY}
 CACHE_CIUDADES = {}
 
 
 def normalizar(texto):
-    """Elimina acentos, guiones y mayúsculas para emparejar nombres entre APIs."""
     t = unicodedata.normalize("NFKD", texto or "").encode("ascii", "ignore").decode("ascii")
-    return t.lower().replace("-", " ").replace("fc", "").replace("cf", "").strip()
+    t = t.lower().replace("-", " ").replace(".", " ")
+    for palabra in ("fc", "cf", "sc", "ec", "ac", "ca", "cd", "club", "atletico", "atlético"):
+        t = t.replace(f" {palabra} ", " ")
+    return " ".join(t.split())
 
 
-def buscar_equipo_en_diccionario(nombre_objetivo, diccionario):
+def buscar_equipo(nombre_objetivo, diccionario):
     if not diccionario:
         return None
     objetivo_norm = normalizar(nombre_objetivo)
@@ -51,20 +51,54 @@ def buscar_equipo_en_diccionario(nombre_objetivo, diccionario):
     if objetivo_norm in mapa_norm:
         return diccionario[mapa_norm[objetivo_norm]]
 
-    # Coincidencia parcial (ej. "atletico mg" vs "atletico mineiro")
     for k_norm, k_orig in mapa_norm.items():
-        if objetivo_norm in k_norm or k_norm in objetivo_norm:
+        if objetivo_norm and (objetivo_norm in k_norm or k_norm in objetivo_norm):
             return diccionario[k_orig]
 
-    match = difflib.get_close_matches(objetivo_norm, mapa_norm.keys(), n=1, cutoff=0.50)
+    match = difflib.get_close_matches(objetivo_norm, mapa_norm.keys(), n=1, cutoff=0.52)
     return diccionario[mapa_norm[match[0]]] if match else None
 
 
 # ==========================================
-# 1. ESPN PUBLIC API (SIN API KEY - TEMPORADA ACTUAL)
+# 1. CARTELERA 48H + ESTADÍSTICAS ESPN (GRATIS)
 # ==========================================
+def obtener_partidos_proximos_espn(espn_slug, ahora_utc):
+    """Trae partidos programados de hoy y mañana (próximas 48h)."""
+    desde = ahora_utc.strftime("%Y%m%d")
+    hasta = (ahora_utc + timedelta(days=1)).strftime("%Y%m%d")
+    url = f"https://site.api.espn.com/apis/site/v2/sports/soccer/{espn_slug}/scoreboard"
+    partidos = []
+    try:
+        r = requests.get(url, params={"dates": f"{desde}-{hasta}", "limit": 50}, timeout=15)
+        if r.status_code != 200:
+            return partidos
+
+        for ev in r.json().get("events", []):
+            state = ev.get("status", {}).get("type", {}).get("state", "")
+            if state != "pre":  # Solo partidos que aún no empiezan
+                continue
+
+            comp = (ev.get("competitions") or [{}])[0]
+            competitors = comp.get("competitors", [])
+            home_c = next((c for c in competitors if c.get("homeAway") == "home"), None)
+            away_c = next((c for c in competitors if c.get("homeAway") == "away"), None)
+            if not home_c or not away_c:
+                continue
+
+            ciudad = comp.get("venue", {}).get("address", {}).get("city", "")
+            partidos.append({
+                "id": str(ev.get("id", "")),
+                "date": ev.get("date", ""),
+                "homeTeam": home_c.get("team", {}).get("displayName", ""),
+                "awayTeam": away_c.get("team", {}).get("displayName", ""),
+                "venueCity": ciudad,
+            })
+    except Exception as e:
+        print(f"  [Aviso ESPN Cartelera] {espn_slug}: {e}")
+    return partidos
+
+
 def obtener_standings_espn(espn_slug):
-    """Extrae tabla real 2026 (PJ, GF, GA, Puntos, DG) desde ESPN."""
     url = f"https://site.api.espn.com/apis/v2/sports/soccer/{espn_slug}/standings"
     equipos = {}
     try:
@@ -72,8 +106,6 @@ def obtener_standings_espn(espn_slug):
         if r.status_code != 200:
             return equipos
         data = r.json()
-
-        # ESPN puede devolver grupos dentro de 'children' o directo en 'standings'
         bloques = []
         if "children" in data:
             for ch in data["children"]:
@@ -86,7 +118,6 @@ def obtener_standings_espn(espn_slug):
             nombre = team.get("displayName") or team.get("name") or ""
             if not nombre:
                 continue
-
             stats_map = {s.get("name"): s.get("value", 0) for s in entry.get("stats", [])}
             pj = float(stats_map.get("gamesPlayed", 0) or 0)
             gf = float(stats_map.get("pointsFor", 0) or 0)
@@ -104,25 +135,20 @@ def obtener_standings_espn(espn_slug):
             equipos[nombre] = info
             if team.get("shortDisplayName"):
                 equipos[team["shortDisplayName"]] = info
-
-        print(f"  [ESPN Standings] {espn_slug}: {len(bloques)} equipos cargados.")
     except Exception as e:
         print(f"  [Aviso ESPN Standings] {espn_slug}: {e}")
     return equipos
 
 
-def obtener_recientes_espn(espn_slug, fecha_hoy_dt):
-    """Descarga partidos terminados de los últimos 25 días para sacar racha y descanso real."""
-    desde = (fecha_hoy_dt - timedelta(days=25)).strftime("%Y%m%d")
-    hasta = (fecha_hoy_dt - timedelta(days=1)).strftime("%Y%m%d")
+def obtener_recientes_espn(espn_slug, ahora_utc):
+    desde = (ahora_utc - timedelta(days=25)).strftime("%Y%m%d")
+    hasta = (ahora_utc - timedelta(days=1)).strftime("%Y%m%d")
     url = f"https://site.api.espn.com/apis/site/v2/sports/soccer/{espn_slug}/scoreboard"
     historial = {}
-
     try:
         r = requests.get(url, params={"dates": f"{desde}-{hasta}", "limit": 200}, timeout=15)
         if r.status_code != 200:
             return historial
-
         for ev in r.json().get("events", []):
             if not ev.get("status", {}).get("type", {}).get("completed"):
                 continue
@@ -131,7 +157,6 @@ def obtener_recientes_espn(espn_slug, fecha_hoy_dt):
             competitors = comp.get("competitors", [])
             if len(competitors) != 2:
                 continue
-
             for idx, c in enumerate(competitors):
                 rival = competitors[1 - idx]
                 t_name = c.get("team", {}).get("displayName", "")
@@ -140,21 +165,11 @@ def obtener_recientes_espn(espn_slug, fecha_hoy_dt):
                 g_f = int(float(c.get("score", 0) or 0))
                 g_c = int(float(rival.get("score", 0) or 0))
                 res = "W" if g_f > g_c else ("L" if g_f < g_c else "D")
-
-                historial.setdefault(t_name, []).append({
-                    "date": fecha_ev,
-                    "res": res,
-                    "gf": g_f,
-                    "ga": g_c,
-                })
-
-        # Ordenar del más reciente al más antiguo
+                historial.setdefault(t_name, []).append({"date": fecha_ev, "res": res})
         for t in historial:
             historial[t].sort(key=lambda x: x["date"], reverse=True)
-
-        print(f"  [ESPN Recientes] {espn_slug}: historial cargado para {len(historial)} equipos.")
-    except Exception as e:
-        print(f"  [Aviso ESPN Recientes] {espn_slug}: {e}")
+    except Exception:
+        pass
     return historial
 
 
@@ -162,23 +177,19 @@ def construir_metricas_espn(nombre_equipo, es_local, tabla_espn, hist_espn, fech
     base_gf = avg_h if es_local else avg_a
     base_ga = avg_a if es_local else avg_h
     ratio_sede = (avg_h / avg_a) if es_local else (avg_a / avg_h)
-    ajuste_sede_gf = ratio_sede ** 0.35
-    ajuste_sede_ga = (1.0 / ratio_sede) ** 0.35
 
-    info = buscar_equipo_en_diccionario(nombre_equipo, tabla_espn)
-    partidos = buscar_equipo_en_diccionario(nombre_equipo, hist_espn) or []
+    info = buscar_equipo(nombre_equipo, tabla_espn)
+    partidos = buscar_equipo(nombre_equipo, hist_espn) or []
 
-    # 1. Goles ajustados por sede + suavizado bayesiano
     if info and info["pj"] > 0:
-        gf_raw = info["gf_pg"] * ajuste_sede_gf
-        ga_raw = info["ga_pg"] * ajuste_sede_ga
+        gf_raw = info["gf_pg"] * (ratio_sede ** 0.35)
+        ga_raw = info["ga_pg"] * ((1.0 / ratio_sede) ** 0.35)
         gf_final = round((gf_raw * info["pj"] + 2.5 * base_gf) / (info["pj"] + 2.5), 2)
         ga_final = round((ga_raw * info["pj"] + 2.5 * base_ga) / (info["pj"] + 2.5), 2)
         pseudo_elo = round(1380 + (info["ppg"] * 115) + (info["gd_pg"] * 45))
     else:
         gf_final, ga_final, pseudo_elo = base_gf, base_ga, 1550
 
-    # 2. Forma real (últimos 5) y días reales de descanso
     rest_days = 5
     if partidos:
         try:
@@ -187,75 +198,116 @@ def construir_metricas_espn(nombre_equipo, es_local, tabla_espn, hist_espn, fech
             rest_days = max(1, min(14, (dt_hoy - dt_ult).days))
         except Exception:
             pass
-        ult5 = [p["res"] for p in partidos[:5]]
-        form_str = "".join(reversed(ult5))
+        form_str = "".join(reversed([p["res"] for p in partidos[:5]]))
         pts_5 = sum(3 if c == "W" else 1 if c == "D" else 0 for c in form_str)
         form_score = round(pts_5 / (len(form_str) * 3), 2)
     else:
-        form_str = "DDDDD"
-        form_score = 0.5
+        form_str, form_score = "DDDDD", 0.5
 
     return {
-        "gf": gf_final,
-        "ga": ga_final,
-        "form_str": form_str,
-        "form_score": form_score,
-        "rest_days": rest_days,
-        "pseudo_elo": pseudo_elo,
+        "gf": gf_final, "ga": ga_final,
+        "form_str": form_str, "form_score": form_score,
+        "rest_days": rest_days, "pseudo_elo": pseudo_elo,
     }
 
 
 # ==========================================
-# 2. API-FOOTBALL (PARTIDOS DEL DÍA Y BAJAS)
+# 2. FOOTBALL-DATA.ORG (PRIORIDAD 1 - EXACTO)
 # ==========================================
-def peticion_football(endpoint, params):
-    url = f"https://v3.football.api-sports.io/{endpoint}"
-    for _ in range(2):
-        try:
-            r = requests.get(url, headers=HEADERS_FOOTBALL, params=params, timeout=20)
-            data = r.json()
-            errores = data.get("errors", {})
-            if errores and "rateLimit" in str(errores):
-                time.sleep(62)
+def obtener_historial_football_data(fd_code):
+    if not fd_code or not FOOTBALL_DATA_KEY:
+        return {}
+    url = f"https://api.football-data.org/v4/competitions/{fd_code}/matches"
+    historial = {}
+    try:
+        r = requests.get(url, headers=HEADERS_FD, params={"status": "FINISHED"}, timeout=20)
+        if r.status_code != 200:
+            print(f"  [Aviso Football-Data] {fd_code} -> Status {r.status_code}")
+            return {}
+        partidos = r.json().get("matches", [])
+        for m in partidos:
+            ft = m.get("score", {}).get("fullTime", {})
+            gh, ga = ft.get("home"), ft.get("away")
+            if gh is None or ga is None:
                 continue
-            if errores:
-                print(f"  [Error API-Football {endpoint}] {errores}")
-                return []
-            return data.get("response", [])
-        except Exception as e:
-            print(f"  [Aviso] {endpoint}: {e}")
-    return []
+            fecha = m.get("utcDate", "")
+            h_team, a_team = m.get("homeTeam", {}), m.get("awayTeam", {})
+            reg_h = {"date": fecha, "es_local": True,  "gf": gh, "ga": ga}
+            reg_a = {"date": fecha, "es_local": False, "gf": ga, "ga": gh}
+            for clave in (h_team.get("name"), h_team.get("shortName")):
+                if clave: historial.setdefault(clave, []).append(reg_h)
+            for clave in (a_team.get("name"), a_team.get("shortName")):
+                if clave: historial.setdefault(clave, []).append(reg_a)
+        for k in historial:
+            historial[k].sort(key=lambda x: x["date"], reverse=True)
+        print(f"  [Football-Data] {fd_code}: {len(partidos)} partidos terminados cargados.")
+    except Exception as e:
+        print(f"  [Aviso Football-Data] {fd_code}: {e}")
+    return historial
 
 
-def obtener_impacto_bajas(fixture_id, home_id, away_id):
-    items = peticion_football("injuries", {"fixture": fixture_id})
-    bajas_home, bajas_away = [], []
-    for item in items:
-        t_id = item.get("team", {}).get("id")
-        jugador = item.get("player", {}).get("name", "Desconocido")
-        motivo = item.get("player", {}).get("reason", "Lesión")
-        if t_id == home_id:
-            bajas_home.append(f"{jugador} ({motivo})")
-        elif t_id == away_id:
-            bajas_away.append(f"{jugador} ({motivo})")
-    return min(len(bajas_home) * 2.5, 15.0), min(len(bajas_away) * 2.5, 15.0), bajas_home, bajas_away
+def calcular_desde_historial(partidos, es_local_hoy, fecha_partido_iso, avg_h, avg_a):
+    base_gf = avg_h if es_local_hoy else avg_a
+    base_ga = avg_a if es_local_hoy else avg_h
+
+    rest_days = 5
+    try:
+        dt_hoy = datetime.fromisoformat(fecha_partido_iso.replace("Z", "+00:00"))
+        dt_ult = datetime.fromisoformat(partidos[0]["date"].replace("Z", "+00:00"))
+        rest_days = max(1, min(14, (dt_hoy - dt_ult).days))
+    except Exception:
+        pass
+
+    gf_gen_s, ga_gen_s, w_gen = 0.0, 0.0, 0.0
+    gf_sed_s, ga_sed_s, w_sed = 0.0, 0.0, 0.0
+    ult5_res, pts_tot, dg_tot = [], 0, 0
+    n_tot = len(partidos)
+
+    for i, p in enumerate(partidos):
+        gf, ga = p["gf"], p["ga"]
+        dg_tot += (gf - ga)
+        if gf > ga: pts_tot += 3; res = "W"
+        elif gf == ga: pts_tot += 1; res = "D"
+        else: res = "L"
+        if i < 5: ult5_res.append(res)
+        if i < 15:
+            w = 0.92 ** i
+            gf_gen_s += gf * w; ga_gen_s += ga * w; w_gen += w
+            if p["es_local"] == es_local_hoy:
+                gf_sed_s += gf * w; ga_sed_s += ga * w; w_sed += w
+
+    gf_gen = (gf_gen_s + 2.0 * base_gf) / (w_gen + 2.0)
+    ga_gen = (ga_gen_s + 2.0 * base_ga) / (w_gen + 2.0)
+    if w_sed >= 1.8:
+        gf_sed = (gf_sed_s + 2.0 * base_gf) / (w_sed + 2.0)
+        ga_sed = (ga_sed_s + 2.0 * base_ga) / (w_sed + 2.0)
+        gf_final = round(0.65 * gf_sed + 0.35 * gf_gen, 2)
+        ga_final = round(0.65 * ga_sed + 0.35 * ga_gen, 2)
+    else:
+        gf_final, ga_final = round(gf_gen, 2), round(ga_gen, 2)
+
+    form_str = "".join(reversed(ult5_res)) or "DDDDD"
+    pts_5 = sum(3 if c == "W" else 1 if c == "D" else 0 for c in form_str)
+    form_score = round(pts_5 / (len(form_str) * 3), 2)
+    pseudo_elo = round(1380 + ((pts_tot / max(1, n_tot)) * 115) + ((dg_tot / max(1, n_tot)) * 45))
+
+    return {
+        "gf": gf_final, "ga": ga_final,
+        "form_str": form_str, "form_score": form_score,
+        "rest_days": rest_days, "pseudo_elo": pseudo_elo,
+    }
 
 
 # ==========================================
-# 3. OPEN-METEO (FACTOR CLIMA SILENCIOSO)
+# 3. OPEN-METEO + CLUB ELO + THE ODDS API
 # ==========================================
 def obtener_factor_clima(ciudad, fecha_iso):
     if not ciudad or not fecha_iso:
         return 1.0
     ciudad_limpia = ciudad.split(",")[0].strip()
-
     if ciudad_limpia not in CACHE_CIUDADES:
         try:
-            r = requests.get(
-                "https://geocoding-api.open-meteo.com/v1/search",
-                params={"name": ciudad_limpia, "count": 1},
-                timeout=10,
-            )
+            r = requests.get("https://geocoding-api.open-meteo.com/v1/search", params={"name": ciudad_limpia, "count": 1}, timeout=10)
             res = r.json().get("results", [])
             CACHE_CIUDADES[ciudad_limpia] = (res[0]["latitude"], res[0]["longitude"]) if res else None
         except Exception:
@@ -264,19 +316,12 @@ def obtener_factor_clima(ciudad, fecha_iso):
     coords = CACHE_CIUDADES[ciudad_limpia]
     if not coords:
         return 1.0
-
     try:
         dt_utc = datetime.fromisoformat(fecha_iso.replace("Z", "+00:00")).astimezone(timezone.utc)
-        hora_obj = dt_utc.strftime("%Y-%m-%dT%H:00")
-        dia = dt_utc.strftime("%Y-%m-%d")
-
+        hora_obj, dia = dt_utc.strftime("%Y-%m-%dT%H:00"), dt_utc.strftime("%Y-%m-%d")
         r = requests.get(
             "https://api.open-meteo.com/v1/forecast",
-            params={
-                "latitude": coords[0], "longitude": coords[1],
-                "hourly": "temperature_2m,precipitation,wind_speed_10m",
-                "timezone": "UTC", "start_date": dia, "end_date": dia,
-            },
+            params={"latitude": coords[0], "longitude": coords[1], "hourly": "temperature_2m,precipitation,wind_speed_10m", "timezone": "UTC", "start_date": dia, "end_date": dia},
             timeout=10,
         )
         hourly = r.json().get("hourly", {})
@@ -296,9 +341,6 @@ def obtener_factor_clima(ciudad, fecha_iso):
     return 1.0
 
 
-# ==========================================
-# 4. CLUB ELO + THE ODDS API
-# ==========================================
 def obtener_tabla_elo(fecha_str):
     elo_map = {}
     try:
@@ -341,12 +383,10 @@ def extraer_cuotas_partido(home_name, away_name, eventos_odds):
     }
     if not eventos_odds:
         return cuotas
-
     nombres = [ev.get("home_team", "") for ev in eventos_odds]
     match = difflib.get_close_matches(home_name, nombres, n=1, cutoff=0.50)
     if not match:
         return cuotas
-
     evento = next((ev for ev in eventos_odds if ev.get("home_team") == match[0]), None)
     if not evento:
         return cuotas
@@ -377,89 +417,94 @@ def extraer_cuotas_partido(home_name, away_name, eventos_odds):
 
 
 # ==========================================
-# 5. FLUJO PRINCIPAL
+# 4. FLUJO PRINCIPAL
 # ==========================================
 def main():
     ahora_utc = datetime.now(timezone.utc)
     hoy = ahora_utc.strftime("%Y-%m-%d")
-    print(f"Iniciando recolección híbrida para: {hoy}")
+    print(f"Iniciando recolección (ESPN + Football-Data + Odds + Open-Meteo) para 48h desde {hoy}")
 
     elo_map = obtener_tabla_elo(hoy)
-    fixtures = peticion_football("fixtures", {"date": hoy})
-
-    filtrados = [
-        f for f in fixtures
-        if f["league"]["id"] in LIGAS_OBJETIVO
-        and f["fixture"]["status"]["short"] in ("NS", "TBD")
-    ][:MAX_PARTIDOS_DIA]
-
-    print(f"Total partidos hoy: {len(fixtures)} | En ligas objetivo: {len(filtrados)}")
-
-    cuotas_por_liga, espn_tablas, espn_recientes = {}, {}, {}
-    for lid in set(f["league"]["id"] for f in filtrados):
-        cfg = LIGAS_OBJETIVO[lid]
-        cuotas_por_liga[lid] = obtener_cuotas_liga(cfg["odds_key"])
-        espn_tablas[lid] = obtener_standings_espn(cfg["espn"])
-        espn_recientes[lid] = obtener_recientes_espn(cfg["espn"], ahora_utc)
-
     partidos_salida = []
-    for f in filtrados:
-        fid = f["fixture"]["id"]
-        lid = f["league"]["id"]
-        cfg = LIGAS_OBJETIVO[lid]
-        home = f["teams"]["home"]
-        away = f["teams"]["away"]
-        ciudad = f["fixture"].get("venue", {}).get("city", "")
-        fecha_iso = f["fixture"]["date"]
 
-        print(f"Procesando: {home['name']} vs {away['name']} ({cfg['nombre']})...")
+    for cfg in LIGAS_OBJETIVO:
+        if len(partidos_salida) >= MAX_PARTIDOS_DIA:
+            break
 
-        stats_h = construir_metricas_espn(home["name"], True, espn_tablas[lid], espn_recientes[lid], fecha_iso, cfg["avg_h"], cfg["avg_a"])
-        stats_a = construir_metricas_espn(away["name"], False, espn_tablas[lid], espn_recientes[lid], fecha_iso, cfg["avg_h"], cfg["avg_a"])
-        pen_h, pen_a, bajas_h, bajas_a = obtener_impacto_bajas(fid, home["id"], away["id"])
-        cuotas = extraer_cuotas_partido(home["name"], away["name"], cuotas_por_liga.get(lid, []))
-        weather_factor = obtener_factor_clima(ciudad, fecha_iso)
+        proximos = obtener_partidos_proximos_espn(cfg["espn"], ahora_utc)
+        if not proximos:
+            continue
 
-        elo_h = buscar_elo(home["name"], elo_map)
-        elo_a = buscar_elo(away["name"], elo_map)
-        if elo_h is None or elo_a is None:
-            elo_h, elo_a = stats_h["pseudo_elo"], stats_a["pseudo_elo"]
+        print(f"\n[{cfg['nombre']}] {len(proximos)} partidos encontrados en próximas 48h.")
+        cuotas_liga = obtener_cuotas_liga(cfg["odds_key"])
+        fd_hist = obtener_historial_football_data(cfg["fd_code"])
+        espn_tablas = obtener_standings_espn(cfg["espn"])
+        espn_recientes = obtener_recientes_espn(cfg["espn"], ahora_utc)
 
-        partidos_salida.append({
-            "id": str(fid),
-            "league": cfg["nombre"],
-            "date": fecha_iso,
-            "homeTeam": home["name"],
-            "awayTeam": away["name"],
-            "stats": {
-                "homeGoalsFor": stats_h["gf"],
-                "homeGoalsAgainst": stats_h["ga"],
-                "homeXG": stats_h["gf"],
-                "homeXGA": stats_h["ga"],
-                "awayGoalsFor": stats_a["gf"],
-                "awayGoalsAgainst": stats_a["ga"],
-                "awayXG": stats_a["gf"],
-                "awayXGA": stats_a["ga"],
-                "leagueAvgHome": cfg["avg_h"],
-                "leagueAvgAway": cfg["avg_a"],
-            },
-            "context": {
-                "homeElo": elo_h,
-                "awayElo": elo_a,
-                "homeForm": stats_h["form_str"],
-                "awayForm": stats_a["form_str"],
-                "homeFormScore": stats_h["form_score"],
-                "awayFormScore": stats_a["form_score"],
-                "homeRestDays": stats_h["rest_days"],
-                "awayRestDays": stats_a["rest_days"],
-                "homeInjuryImpact": pen_h,
-                "awayInjuryImpact": pen_a,
-                "homeInjuriesList": bajas_h,
-                "awayInjuriesList": bajas_a,
-                "weatherFactor": weather_factor,
-            },
-            "odds": cuotas,
-        })
+        for p in proximos:
+            if len(partidos_salida) >= MAX_PARTIDOS_DIA:
+                break
+
+            home_name, away_name = p["homeTeam"], p["awayTeam"]
+            fecha_iso, ciudad = p["date"], p["venueCity"]
+            print(f"  Procesando: {home_name} vs {away_name}...")
+
+            hist_h = buscar_equipo(home_name, fd_hist)
+            hist_a = buscar_equipo(away_name, fd_hist)
+
+            if hist_h:
+                stats_h = calcular_desde_historial(hist_h, True, fecha_iso, cfg["avg_h"], cfg["avg_a"])
+            else:
+                stats_h = construir_metricas_espn(home_name, True, espn_tablas, espn_recientes, fecha_iso, cfg["avg_h"], cfg["avg_a"])
+
+            if hist_a:
+                stats_a = calcular_desde_historial(hist_a, False, fecha_iso, cfg["avg_h"], cfg["avg_a"])
+            else:
+                stats_a = construir_metricas_espn(away_name, False, espn_tablas, espn_recientes, fecha_iso, cfg["avg_h"], cfg["avg_a"])
+
+            cuotas = extraer_cuotas_partido(home_name, away_name, cuotas_liga)
+            weather_factor = obtener_factor_clima(ciudad, fecha_iso)
+
+            elo_h = buscar_elo(home_name, elo_map)
+            elo_a = buscar_elo(away_name, elo_map)
+            if elo_h is None or elo_a is None:
+                elo_h, elo_a = stats_h["pseudo_elo"], stats_a["pseudo_elo"]
+
+            partidos_salida.append({
+                "id": p["id"],
+                "league": cfg["nombre"],
+                "date": fecha_iso,
+                "homeTeam": home_name,
+                "awayTeam": away_name,
+                "stats": {
+                    "homeGoalsFor": stats_h["gf"],
+                    "homeGoalsAgainst": stats_h["ga"],
+                    "homeXG": stats_h["gf"],
+                    "homeXGA": stats_h["ga"],
+                    "awayGoalsFor": stats_a["gf"],
+                    "awayGoalsAgainst": stats_a["ga"],
+                    "awayXG": stats_a["gf"],
+                    "awayXGA": stats_a["ga"],
+                    "leagueAvgHome": cfg["avg_h"],
+                    "leagueAvgAway": cfg["avg_a"],
+                },
+                "context": {
+                    "homeElo": elo_h,
+                    "awayElo": elo_a,
+                    "homeForm": stats_h["form_str"],
+                    "awayForm": stats_a["form_str"],
+                    "homeFormScore": stats_h["form_score"],
+                    "awayFormScore": stats_a["form_score"],
+                    "homeRestDays": stats_h["rest_days"],
+                    "awayRestDays": stats_a["rest_days"],
+                    "homeInjuryImpact": 0.0,
+                    "awayInjuryImpact": 0.0,
+                    "homeInjuriesList": [],
+                    "awayInjuriesList": [],
+                    "weatherFactor": weather_factor,
+                },
+                "odds": cuotas,
+            })
 
     salida = {
         "updatedAt": ahora_utc.isoformat(),
@@ -470,7 +515,7 @@ def main():
     with open("partidos_hoy.json", "w", encoding="utf-8") as fp:
         json.dump(salida, fp, ensure_ascii=False, indent=2)
 
-    print(f"Listo. Guardados {len(partidos_salida)} partidos en partidos_hoy.json")
+    print(f"\nListo. Guardados {len(partidos_salida)} partidos en partidos_hoy.json")
 
 
 if __name__ == "__main__":
