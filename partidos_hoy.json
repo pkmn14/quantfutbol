@@ -1,5 +1,63 @@
 {
-  "updatedAt": "2026-11-25T21:41:15.162073+00:00",
+  "updatedAt": "2026-11-25T22:04:07.853705+00:00",
   "date": "2026-11-25",
-  "matches": []
+  "matches": [
+    {
+      "id": "1492461",
+      "league": "Brasileirão Serie A",
+      "date": "2026-11-25T23:00:00+00:00",
+      "venueCity": "Bello Harisanta",
+      "homeTeam": "Atletico-MG",
+      "awayTeam": "Corinthians",
+      "stats": {
+        "homeGoalsFor": 1.48,
+        "homeGoalsAgainst": 1.02,
+        "homeXG": 1.48,
+        "homeXGA": 1.02,
+        "awayGoalsFor": 1.02,
+        "awayGoalsAgainst": 1.48,
+        "awayXG": 1.02,
+        "awayXGA": 1.48,
+        "leagueAvgHome": 1.48,
+        "leagueAvgAway": 1.02
+      },
+      "context": {
+        "homeElo": 1550,
+        "awayElo": 1550,
+        "homeForm": "DDDDD",
+        "awayForm": "DDDDD",
+        "homeFormScore": 0.5,
+        "awayFormScore": 0.5,
+        "homeRestDays": 5,
+        "awayRestDays": 5,
+        "homeInjuryImpact": 7.5,
+        "awayInjuryImpact": 10.0,
+        "homeInjuriesList": [
+          "Fred (Yellow Cards)",
+          "Lyanco (Inactive)",
+          "Reinier (Muscle Injury)"
+        ],
+        "awayInjuriesList": [
+          "A. Carrillo (Yellow Cards)",
+          "R. Garro (Injury)",
+          "Kayke Ferrari (Knee Injury)",
+          "Z. Labyad (Knee Injury)"
+        ],
+        "weatherFactor": 1.0,
+        "weatherSummary": "Sin datos de clima"
+      },
+      "odds": {
+        "home": 2.78,
+        "draw": 3.37,
+        "away": 2.9,
+        "over25": 2.22,
+        "under25": 1.79,
+        "btts_yes": 0,
+        "btts_no": 0,
+        "pinnacle_home": 2.72,
+        "pinnacle_draw": 3.33,
+        "pinnacle_away": 2.75
+      }
+    }
+  ]
 }
