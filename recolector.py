@@ -4,7 +4,7 @@ import json
 import csv
 import io
 import difflib
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 import requests
 
 # ==========================================
@@ -13,7 +13,7 @@ import requests
 APIFOOTBALL_KEY = os.environ.get("APIFOOTBALL_KEY", "")
 ODDS_API_KEY = os.environ.get("ODDS_API_KEY", "")
 
-MAX_PARTIDOS_DIA = 15  # Consumo seguro en plan gratis (< 60 req/día)
+MAX_PARTIDOS_DIA = 15
 
 LIGAS_OBJETIVO = {
     # --- SUDAMÉRICA ---
@@ -39,13 +39,12 @@ CACHE_CIUDADES = {}
 # ==========================================
 def peticion_football(endpoint, params):
     url = f"https://v3.football.api-sports.io/{endpoint}"
-    for intento in range(2):
+    for _ in range(2):
         try:
             r = requests.get(url, headers=HEADERS_FOOTBALL, params=params, timeout=20)
             data = r.json()
             errores = data.get("errors", {})
 
-            # Si golpea el límite por minuto, espera 62s y reintenta una vez
             if errores and "rateLimit" in str(errores):
                 print("  [Pausa] Límite de 10 req/min alcanzado. Esperando 62s...")
                 time.sleep(62)
@@ -55,7 +54,6 @@ def peticion_football(endpoint, params):
                 print(f"  [Error API-Football {endpoint}] {errores}")
                 return []
 
-            # Pausa preventiva si queda 1 sola petición en el minuto actual
             restantes_min = r.headers.get("x-ratelimit-requests-remaining")
             if restantes_min is not None and int(restantes_min) <= 1:
                 time.sleep(15)
@@ -133,7 +131,7 @@ def obtener_factor_clima(ciudad, fecha_iso):
 
 
 # ==========================================
-# 2. CLUB ELO (CON FALLBACK PARA SUDAMÉRICA)
+# 2. CLUB ELO (EUROPA)
 # ==========================================
 def obtener_tabla_elo(fecha_str):
     elo_map = {}
@@ -226,104 +224,105 @@ def extraer_cuotas_partido(home_name, away_name, eventos_odds):
 
 
 # ==========================================
-# 4. ESTADÍSTICAS REALES DESDE ÚLTIMOS 10 PARTIDOS
+# 4. TABLA DE POSICIONES (1 CALL POR LIGA)
 # ==========================================
-def analizar_ultimos_partidos(team_id, es_local_hoy, fecha_hoy_iso, avg_h, avg_a):
-    """Calcula goles ponderados (Time-Decay), forma real, días de descanso y Pseudo-Elo."""
-    partidos = peticion_football("fixtures", {"team": team_id, "last": 10})
-    terminados = [
-        p for p in partidos
-        if p.get("fixture", {}).get("status", {}).get("short") in ("FT", "AET", "PEN")
-        and p.get("goals", {}).get("home") is not None
-    ]
+def obtener_tabla_liga(league_id, season):
+    """Extrae goles local/visita, racha real y Pseudo-Elo de todos los equipos de la liga."""
+    resp = peticion_football("standings", {"league": league_id, "season": season})
+    tabla = {}
+    if not resp:
+        return tabla
 
-    # Ordenar del más reciente al más antiguo
-    terminados.sort(key=lambda x: x["fixture"]["date"], reverse=True)
+    grupos = resp[0].get("league", {}).get("standings", [])
+    for grupo in grupos:
+        for fila in grupo:
+            tid = fila.get("team", {}).get("id")
+            if not tid:
+                continue
 
-    base_gf = avg_h if es_local_hoy else avg_a
-    base_ga = avg_a if es_local_hoy else avg_h
+            pj_all = fila.get("all", {}).get("played") or 0
+            pts = fila.get("points") or 0
+            gd = fila.get("goalsDiff") or 0
+            form_raw = (fila.get("form") or "")[-5:]
 
-    if not terminados:
+            h_data = fila.get("home", {})
+            a_data = fila.get("away", {})
+
+            tabla[tid] = {
+                "h_pj": h_data.get("played") or 0,
+                "h_gf": h_data.get("goals", {}).get("for") or 0,
+                "h_ga": h_data.get("goals", {}).get("against") or 0,
+                "a_pj": a_data.get("played") or 0,
+                "a_gf": a_data.get("goals", {}).get("for") or 0,
+                "a_ga": a_data.get("goals", {}).get("against") or 0,
+                "form": form_raw,
+                "ppg": pts / max(1, pj_all),
+                "gd_pg": gd / max(1, pj_all),
+            }
+    print(f"  [Standings] Liga {league_id} (Temp {season}): {len(tabla)} equipos cargados.")
+    return tabla
+
+
+def extraer_metricas_equipo(team_id, es_local, tabla_liga, avg_h, avg_a):
+    base_gf = avg_h if es_local else avg_a
+    base_ga = avg_a if es_local else avg_h
+    info = tabla_liga.get(team_id)
+
+    if not info:
         return {
             "gf": base_gf, "ga": base_ga,
             "form_str": "DDDDD", "form_score": 0.5,
-            "rest_days": 5, "pseudo_elo": 1550,
+            "pseudo_elo": 1550,
         }
 
-    # 1. Días reales de descanso
-    try:
-        dt_hoy = datetime.fromisoformat(fecha_hoy_iso.replace("Z", "+00:00"))
-        dt_ult = datetime.fromisoformat(terminados[0]["fixture"]["date"].replace("Z", "+00:00"))
-        rest_days = max(1, min(14, (dt_hoy - dt_ult).days))
-    except Exception:
-        rest_days = 5
+    pj = info["h_pj"] if es_local else info["a_pj"]
+    gf_tot = info["h_gf"] if es_local else info["a_gf"]
+    ga_tot = info["h_ga"] if es_local else info["a_ga"]
 
-    # 2. Forma real (últimos 5) + Goles ponderados por tiempo + Pseudo-Elo
-    gf_pond, ga_pond, peso_total = 0.0, 0.0, 0.0
-    gf_sede, ga_sede, peso_sede = 0.0, 0.0, 0.0
-    letras_forma = []
-    puntos_10 = 0
-    dif_gol_10 = 0
+    # Suavizado bayesiano (evita extremos si llevan pocos partidos)
+    gf_final = round((gf_tot + 2.0 * base_gf) / (pj + 2.0), 2)
+    ga_final = round((ga_tot + 2.0 * base_ga) / (pj + 2.0), 2)
 
-    for i, p in enumerate(terminados):
-        peso = 0.90 ** i  # Decaimiento temporal: el último partido pesa 1.0, el 10° pesa 0.39
-        fue_local = (p["teams"]["home"]["id"] == team_id)
-        g_favor = p["goals"]["home"] if fue_local else p["goals"]["away"]
-        g_contra = p["goals"]["away"] if fue_local else p["goals"]["home"]
-
-        gf_pond += g_favor * peso
-        ga_pond += g_contra * peso
-        peso_total += peso
-
-        # Separa rendimiento específico en la misma condición (local o visitante)
-        if fue_local == es_local_hoy:
-            gf_sede += g_favor * peso
-            ga_sede += g_contra * peso
-            peso_sede += peso
-
-        dif_gol_10 += (g_favor - g_contra)
-        if g_favor > g_contra:
-            puntos_10 += 3
-            if i < 5:
-                letras_forma.append("W")
-        elif g_favor == g_contra:
-            puntos_10 += 1
-            if i < 5:
-                letras_forma.append("D")
-        else:
-            if i < 5:
-                letras_forma.append("L")
-
-    # Regresión ligera hacia el promedio de la liga (evita extremos por pocos partidos)
-    gf_gen = (gf_pond + 1.5 * base_gf) / (peso_total + 1.5)
-    ga_gen = (ga_pond + 1.5 * base_ga) / (peso_total + 1.5)
-
-    if peso_sede >= 1.5:
-        gf_esp = (gf_sede + 1.5 * base_gf) / (peso_sede + 1.5)
-        ga_esp = (ga_sede + 1.5 * base_ga) / (peso_sede + 1.5)
-        gf_final = round(0.60 * gf_esp + 0.40 * gf_gen, 2)
-        ga_final = round(0.60 * ga_esp + 0.40 * ga_gen, 2)
-    else:
-        gf_final = round(gf_gen, 2)
-        ga_final = round(ga_gen, 2)
-
-    # Forma (más reciente a la derecha, formato estándar ej. "WLDWW")
-    form_str = "".join(reversed(letras_forma)) or "DDDDD"
+    form_str = info["form"] or "DDDDD"
     pts_5 = sum(3 if c == "W" else 1 if c == "D" else 0 for c in form_str)
     form_score = round(pts_5 / (len(form_str) * 3), 2)
 
-    # Pseudo-Elo para ligas sin ClubElo (rango aprox. 1380 - 1720)
-    ppg = puntos_10 / len(terminados)
-    pseudo_elo = round(1400 + (ppg * 95) + (dif_gol_10 * 4))
+    # Pseudo-Elo basado en rendimiento real de temporada (aprox. 1400 - 1720)
+    pseudo_elo = round(1380 + (info["ppg"] * 115) + (info["gd_pg"] * 45))
 
     return {
         "gf": gf_final,
         "ga": ga_final,
         "form_str": form_str,
         "form_score": form_score,
-        "rest_days": rest_days,
         "pseudo_elo": pseudo_elo,
     }
+
+
+def obtener_dias_descanso(team_id, season, fecha_partido_iso):
+    """Consulta partidos recientes por rango de fechas (sin usar parámetro pago 'last')."""
+    try:
+        dt_partido = datetime.fromisoformat(fecha_partido_iso.replace("Z", "+00:00"))
+        desde = (dt_partido - timedelta(days=21)).strftime("%Y-%m-%d")
+        hasta = (dt_partido - timedelta(days=1)).strftime("%Y-%m-%d")
+
+        recientes = peticion_football("fixtures", {
+            "team": team_id,
+            "season": season,
+            "from": desde,
+            "to": hasta,
+        })
+        terminados = [
+            p for p in recientes
+            if p.get("fixture", {}).get("status", {}).get("short") in ("FT", "AET", "PEN")
+        ]
+        if terminados:
+            terminados.sort(key=lambda x: x["fixture"]["date"], reverse=True)
+            dt_ult = datetime.fromisoformat(terminados[0]["fixture"]["date"].replace("Z", "+00:00"))
+            return max(1, min(14, (dt_partido - dt_ult).days))
+    except Exception:
+        pass
+    return 5
 
 
 def obtener_impacto_bajas(fixture_id, home_id, away_id):
@@ -359,29 +358,40 @@ def main():
 
     print(f"Total partidos hoy: {len(fixtures)} | En ligas objetivo: {len(filtrados)}")
 
+    # Cachear cuotas y tablas de posiciones por (league_id, season)
     cuotas_por_liga = {}
-    for lid in set(f["league"]["id"] for f in filtrados):
-        cuotas_por_liga[lid] = obtener_cuotas_liga(LIGAS_OBJETIVO[lid]["odds_key"])
+    tablas_por_liga = {}
+    for f in filtrados:
+        lid = f["league"]["id"]
+        season = f["league"]["season"]
+        if lid not in cuotas_por_liga:
+            cuotas_por_liga[lid] = obtener_cuotas_liga(LIGAS_OBJETIVO[lid]["odds_key"])
+        if (lid, season) not in tablas_por_liga:
+            tablas_por_liga[(lid, season)] = obtener_tabla_liga(lid, season)
 
     partidos_salida = []
     for f in filtrados:
         fid = f["fixture"]["id"]
         lid = f["league"]["id"]
+        season = f["league"]["season"]
         cfg = LIGAS_OBJETIVO[lid]
         home = f["teams"]["home"]
         away = f["teams"]["away"]
         ciudad = f["fixture"].get("venue", {}).get("city", "")
         fecha_iso = f["fixture"]["date"]
 
-        print(f"Procesando: {home['name']} vs {away['name']} ({cfg['nombre']})...")
+        print(f"Procesando: {home['name']} vs {away['name']} ({cfg['nombre']} {season})...")
 
-        stats_h = analizar_ultimos_partidos(home["id"], True, fecha_iso, cfg["avg_h"], cfg["avg_a"])
-        stats_a = analizar_ultimos_partidos(away["id"], False, fecha_iso, cfg["avg_h"], cfg["avg_a"])
+        tabla = tablas_por_liga.get((lid, season), {})
+        stats_h = extraer_metricas_equipo(home["id"], True, tabla, cfg["avg_h"], cfg["avg_a"])
+        stats_a = extraer_metricas_equipo(away["id"], False, tabla, cfg["avg_h"], cfg["avg_a"])
+
+        rest_h = obtener_dias_descanso(home["id"], season, fecha_iso)
+        rest_a = obtener_dias_descanso(away["id"], season, fecha_iso)
         pen_h, pen_a, bajas_h, bajas_a = obtener_impacto_bajas(fid, home["id"], away["id"])
         cuotas = extraer_cuotas_partido(home["name"], away["name"], cuotas_por_liga.get(lid, []))
         weather_factor = obtener_factor_clima(ciudad, fecha_iso)
 
-        # Usa ClubElo si existe para ambos; si no (Sudamérica), usa Pseudo-Elo
         elo_h = buscar_elo(home["name"], elo_map)
         elo_a = buscar_elo(away["name"], elo_map)
         if elo_h is None or elo_a is None:
@@ -412,8 +422,8 @@ def main():
                 "awayForm": stats_a["form_str"],
                 "homeFormScore": stats_h["form_score"],
                 "awayFormScore": stats_a["form_score"],
-                "homeRestDays": stats_h["rest_days"],
-                "awayRestDays": stats_a["rest_days"],
+                "homeRestDays": rest_h,
+                "awayRestDays": rest_a,
                 "homeInjuryImpact": pen_h,
                 "awayInjuryImpact": pen_a,
                 "homeInjuriesList": bajas_h,
