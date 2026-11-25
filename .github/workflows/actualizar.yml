@@ -28,6 +28,7 @@ jobs:
         env:
           APIFOOTBALL_KEY: ${{ secrets.APIFOOTBALL_KEY }}
           ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
+          FOOTBALL_DATA_KEY: ${{ secrets.FOOTBALL_DATA_KEY }}
         run: python recolector.py
 
       - name: Guardar partidos_hoy.json actualizado
