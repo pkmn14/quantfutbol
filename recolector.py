@@ -13,21 +13,22 @@ import requests
 ODDS_API_KEY = os.environ.get("ODDS_API_KEY", "")
 FOOTBALL_DATA_KEY = os.environ.get("FOOTBALL_DATA_KEY", "")
 
-MAX_PARTIDOS_DIA = 20
+MAX_PARTIDOS_DIA = 30
 HORAS_ADELANTO = 96  # Trae partidos de los próximos 4 días
 
-# 8 ligas clave (8 * 2 créditos = 16 créditos/día -> cabe en los 500/mes gratis)
 LIGAS_OBJETIVO = [
+    # --- COPAS INTERNACIONALES ---
+    {"nombre": "UEFA Europa League",         "odds_key": "soccer_uefa_europa_league",         "fd_code": None,  "espn": "uefa.europa",           "avg_h": 1.62, "avg_a": 1.24},
+    {"nombre": "Champions League",           "odds_key": "soccer_uefa_champs_league",         "fd_code": "CL",  "espn": "uefa.champions",        "avg_h": 1.68, "avg_a": 1.30},
+    {"nombre": "Copa Libertadores",          "odds_key": "soccer_conmebol_copa_libertadores", "fd_code": None,  "espn": "conmebol.libertadores", "avg_h": 1.50, "avg_a": 0.95},
     # --- SUDAMÉRICA ---
     {"nombre": "Liga Profesional Argentina", "odds_key": "soccer_argentina_primera_division", "fd_code": None,  "espn": "arg.1",                 "avg_h": 1.28, "avg_a": 0.94},
-    {"nombre": "Copa Libertadores",          "odds_key": "soccer_conmebol_copa_libertadores", "fd_code": None,  "espn": "conmebol.libertadores", "avg_h": 1.50, "avg_a": 0.95},
     {"nombre": "Brasileirão Serie A",        "odds_key": "soccer_brazil_campeonato",          "fd_code": "BSA", "espn": "bra.1",                 "avg_h": 1.48, "avg_a": 1.02},
     # --- EUROPA ---
     {"nombre": "Premier League",             "odds_key": "soccer_epl",                        "fd_code": "PL",  "espn": "eng.1",                 "avg_h": 1.62, "avg_a": 1.32},
     {"nombre": "LaLiga",                     "odds_key": "soccer_spain_la_liga",              "fd_code": "PD",  "espn": "esp.1",                 "avg_h": 1.48, "avg_a": 1.12},
     {"nombre": "Serie A",                    "odds_key": "soccer_italy_serie_a",              "fd_code": "SA",  "espn": "ita.1",                 "avg_h": 1.45, "avg_a": 1.15},
     {"nombre": "Bundesliga",                 "odds_key": "soccer_germany_bundesliga",         "fd_code": "BL1", "espn": "ger.1",                 "avg_h": 1.75, "avg_a": 1.38},
-    {"nombre": "Champions League",           "odds_key": "soccer_uefa_champs_league",         "fd_code": "CL",  "espn": "uefa.champions",        "avg_h": 1.68, "avg_a": 1.30},
 ]
 
 HEADERS_FD = {"X-Auth-Token": FOOTBALL_DATA_KEY}
@@ -67,7 +68,7 @@ def obtener_eventos_y_cuotas(odds_key, ahora_utc, limite_utc):
     url = f"https://api.the-odds-api.com/v4/sports/{odds_key}/odds"
     params = {
         "apiKey": ODDS_API_KEY,
-        "regions": "eu",           # Solo 'eu' incluye Pinnacle y ahorra 50% de créditos
+        "regions": "eu",
         "markets": "h2h,totals",
         "oddsFormat": "decimal",
     }
@@ -215,7 +216,7 @@ def calcular_desde_historial(partidos, es_local_hoy, fecha_partido_iso, avg_h, a
 
 
 # ==========================================
-# 3. ESPN API (ARGENTINA / CONMEBOL / CIUDADES)
+# 3. ESPN API (EUROPA LEAGUE / ARGENTINA / CIUDADES)
 # ==========================================
 def obtener_standings_espn(espn_slug):
     url = f"https://site.api.espn.com/apis/v2/sports/soccer/{espn_slug}/standings"
@@ -276,7 +277,6 @@ def obtener_recientes_y_ciudades_espn(espn_slug, ahora_utc):
             if len(competitors) != 2:
                 continue
 
-            # Guardar ciudad del estadio del equipo local
             ciudad = comp.get("venue", {}).get("address", {}).get("city", "")
             home_c = next((c for c in competitors if c.get("homeAway") == "home"), None)
             if home_c and ciudad:
@@ -416,9 +416,6 @@ def main():
     partidos_salida = []
 
     for cfg in LIGAS_OBJETIVO:
-        if len(partidos_salida) >= MAX_PARTIDOS_DIA:
-            break
-
         eventos = obtener_eventos_y_cuotas(cfg["odds_key"], ahora_utc, limite_utc)
         if not eventos:
             continue
@@ -428,9 +425,6 @@ def main():
         espn_recientes, espn_ciudades = obtener_recientes_y_ciudades_espn(cfg["espn"], ahora_utc)
 
         for ev in eventos:
-            if len(partidos_salida) >= MAX_PARTIDOS_DIA:
-                break
-
             home_name, away_name = ev["home_team"], ev["away_team"]
             fecha_iso = ev["commence_time"]
             print(f"  Procesando: {home_name} vs {away_name} ({cfg['nombre']})...")
@@ -493,6 +487,10 @@ def main():
                 "odds": cuotas,
             })
 
+    # Orden cronológico (más próximos primero) y recorte a los 30 más cercanos
+    partidos_salida.sort(key=lambda x: x["date"])
+    partidos_salida = partidos_salida[:MAX_PARTIDOS_DIA]
+
     salida = {
         "updatedAt": ahora_utc.isoformat(),
         "date": hoy,
@@ -502,7 +500,7 @@ def main():
     with open("partidos_hoy.json", "w", encoding="utf-8") as fp:
         json.dump(salida, fp, ensure_ascii=False, indent=2)
 
-    print(f"\nListo. Guardados {len(partidos_salida)} partidos en partidos_hoy.json")
+    print(f"\nListo. Guardados {len(partidos_salida)} partidos ordenados por fecha en partidos_hoy.json")
 
 
 if __name__ == "__main__":
