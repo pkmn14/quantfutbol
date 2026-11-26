@@ -1,375 +1,7 @@
 {
-  "updatedAt": "2026-11-26T01:48:28.891618+00:00",
+  "updatedAt": "2026-11-26T19:26:31.154303+00:00",
   "date": "2026-11-26",
   "matches": [
-    {
-      "id": "31ebd41354699af625fa3372932206f0",
-      "league": "UEFA Europa League",
-      "date": "2026-11-26T17:45:00Z",
-      "homeTeam": "Olympiakos Piraeus",
-      "awayTeam": "AC Milan",
-      "stats": {
-        "homeGoalsFor": 1.3,
-        "homeGoalsAgainst": 0.62,
-        "homeXG": 1.3,
-        "homeXGA": 0.62,
-        "awayGoalsFor": 1.04,
-        "awayGoalsAgainst": 1.81,
-        "awayXG": 1.04,
-        "awayXGA": 1.81,
-        "leagueAvgHome": 1.62,
-        "leagueAvgAway": 1.24
-      },
-      "context": {
-        "homeElo": 1701,
-        "awayElo": 1432,
-        "homeForm": "DDDDD",
-        "awayForm": "DDDDD",
-        "homeFormScore": 0.5,
-        "awayFormScore": 0.5,
-        "homeRestDays": 5,
-        "awayRestDays": 5,
-        "homeInjuryImpact": 0.0,
-        "awayInjuryImpact": 0.0,
-        "homeInjuriesList": [],
-        "awayInjuriesList": [],
-        "weatherFactor": 1.0
-      },
-      "odds": {
-        "home": 3.0,
-        "draw": 3.6,
-        "away": 2.54,
-        "over25": 1.91,
-        "under25": 2.06,
-        "btts_yes": 0,
-        "btts_no": 0,
-        "pinnacle_home": 2.85,
-        "pinnacle_draw": 3.52,
-        "pinnacle_away": 2.5
-      }
-    },
-    {
-      "id": "cdf4b848361b0374c2027326bd54d8eb",
-      "league": "UEFA Europa League",
-      "date": "2026-11-26T17:45:00Z",
-      "homeTeam": "Dinamo Zagreb",
-      "awayTeam": "Bayer Leverkusen",
-      "stats": {
-        "homeGoalsFor": 1.47,
-        "homeGoalsAgainst": 1.04,
-        "homeXG": 1.47,
-        "homeXGA": 1.04,
-        "awayGoalsFor": 1.6,
-        "awayGoalsAgainst": 0.79,
-        "awayXG": 1.6,
-        "awayXGA": 0.79,
-        "leagueAvgHome": 1.62,
-        "leagueAvgAway": 1.24
-      },
-      "context": {
-        "homeElo": 1592,
-        "awayElo": 1718,
-        "homeForm": "DDDDD",
-        "awayForm": "DDDDD",
-        "homeFormScore": 0.5,
-        "awayFormScore": 0.5,
-        "homeRestDays": 5,
-        "awayRestDays": 5,
-        "homeInjuryImpact": 0.0,
-        "awayInjuryImpact": 0.0,
-        "homeInjuriesList": [],
-        "awayInjuriesList": [],
-        "weatherFactor": 1.0
-      },
-      "odds": {
-        "home": 5.0,
-        "draw": 4.5,
-        "away": 1.72,
-        "over25": 1.47,
-        "under25": 2.62,
-        "btts_yes": 0,
-        "btts_no": 0,
-        "pinnacle_home": 4.53,
-        "pinnacle_draw": 4.33,
-        "pinnacle_away": 1.7
-      }
-    },
-    {
-      "id": "38332e4cbb2b3991904b00a75dc3769d",
-      "league": "UEFA Europa League",
-      "date": "2026-11-26T17:45:00Z",
-      "homeTeam": "Viktoria Plzeň",
-      "awayTeam": "Benfica",
-      "stats": {
-        "homeGoalsFor": 1.13,
-        "homeGoalsAgainst": 1.46,
-        "homeXG": 1.13,
-        "homeXGA": 1.46,
-        "awayGoalsFor": 2.3,
-        "awayGoalsAgainst": 1.13,
-        "awayXG": 2.3,
-        "awayXGA": 1.13,
-        "leagueAvgHome": 1.62,
-        "leagueAvgAway": 1.24
-      },
-      "context": {
-        "homeElo": 1421,
-        "awayElo": 1838,
-        "homeForm": "DDDDD",
-        "awayForm": "DDDDD",
-        "homeFormScore": 0.5,
-        "awayFormScore": 0.5,
-        "homeRestDays": 5,
-        "awayRestDays": 5,
-        "homeInjuryImpact": 0.0,
-        "awayInjuryImpact": 0.0,
-        "homeInjuriesList": [],
-        "awayInjuriesList": [],
-        "weatherFactor": 1.0
-      },
-      "odds": {
-        "home": 6.4,
-        "draw": 5.3,
-        "away": 1.51,
-        "over25": 1.41,
-        "under25": 2.82,
-        "btts_yes": 0,
-        "btts_no": 0,
-        "pinnacle_home": 5.7,
-        "pinnacle_draw": 5.16,
-        "pinnacle_away": 1.49
-      }
-    },
-    {
-      "id": "a18687d4f17a96a7732fb0c8673ea037",
-      "league": "UEFA Europa League",
-      "date": "2026-11-26T17:45:00Z",
-      "homeTeam": "Besiktas JK",
-      "awayTeam": "Hapoel Be'er Sheva",
-      "stats": {
-        "homeGoalsFor": 2.48,
-        "homeGoalsAgainst": 1.6,
-        "homeXG": 2.48,
-        "homeXGA": 1.6,
-        "awayGoalsFor": 0.62,
-        "awayGoalsAgainst": 1.97,
-        "awayXG": 0.62,
-        "awayXGA": 1.97,
-        "leagueAvgHome": 1.62,
-        "leagueAvgAway": 1.24
-      },
-      "context": {
-        "homeElo": 1615,
-        "awayElo": 1330,
-        "homeForm": "DDDDD",
-        "awayForm": "DDDDD",
-        "homeFormScore": 0.5,
-        "awayFormScore": 0.5,
-        "homeRestDays": 5,
-        "awayRestDays": 5,
-        "homeInjuryImpact": 0.0,
-        "awayInjuryImpact": 0.0,
-        "homeInjuriesList": [],
-        "awayInjuriesList": [],
-        "weatherFactor": 1.0
-      },
-      "odds": {
-        "home": 1.3,
-        "draw": 7.0,
-        "away": 13.0,
-        "over25": 1.37,
-        "under25": 3.1,
-        "btts_yes": 0,
-        "btts_no": 0,
-        "pinnacle_home": 1.26,
-        "pinnacle_draw": 6.72,
-        "pinnacle_away": 10.35
-      }
-    },
-    {
-      "id": "7da3be4f6fe50a39ecdf3a8dc12966c8",
-      "league": "UEFA Europa League",
-      "date": "2026-11-26T17:45:00Z",
-      "homeTeam": "Celta Vigo",
-      "awayTeam": "Bournemouth",
-      "stats": {
-        "homeGoalsFor": 1.3,
-        "homeGoalsAgainst": 1.32,
-        "homeXG": 1.3,
-        "homeXGA": 1.32,
-        "awayGoalsFor": 2.02,
-        "awayGoalsAgainst": 0.96,
-        "awayXG": 2.02,
-        "awayXGA": 0.96,
-        "leagueAvgHome": 1.62,
-        "leagueAvgAway": 1.24
-      },
-      "context": {
-        "homeElo": 1444,
-        "awayElo": 1826,
-        "homeForm": "DDDDD",
-        "awayForm": "DDDDD",
-        "homeFormScore": 0.5,
-        "awayFormScore": 0.5,
-        "homeRestDays": 5,
-        "awayRestDays": 5,
-        "homeInjuryImpact": 0.0,
-        "awayInjuryImpact": 0.0,
-        "homeInjuriesList": [],
-        "awayInjuriesList": [],
-        "weatherFactor": 1.0
-      },
-      "odds": {
-        "home": 3.85,
-        "draw": 3.6,
-        "away": 2.16,
-        "over25": 1.96,
-        "under25": 2.02,
-        "btts_yes": 0,
-        "btts_no": 0,
-        "pinnacle_home": 3.56,
-        "pinnacle_draw": 3.57,
-        "pinnacle_away": 2.13
-      }
-    },
-    {
-      "id": "5902b4703e9ddc1f573091e14107834c",
-      "league": "UEFA Europa League",
-      "date": "2026-11-26T17:45:00Z",
-      "homeTeam": "Salzburg",
-      "awayTeam": "FC Ararat-Armenia",
-      "stats": {
-        "homeGoalsFor": 1.13,
-        "homeGoalsAgainst": 1.6,
-        "homeXG": 1.13,
-        "homeXGA": 1.6,
-        "awayGoalsFor": 1.04,
-        "awayGoalsAgainst": 2.99,
-        "awayXG": 1.04,
-        "awayXGA": 2.99,
-        "leagueAvgHome": 1.62,
-        "leagueAvgAway": 1.24
-      },
-      "context": {
-        "homeElo": 1439,
-        "awayElo": 1268,
-        "homeForm": "DDDDD",
-        "awayForm": "DDDDD",
-        "homeFormScore": 0.5,
-        "awayFormScore": 0.5,
-        "homeRestDays": 5,
-        "awayRestDays": 5,
-        "homeInjuryImpact": 0.0,
-        "awayInjuryImpact": 0.0,
-        "homeInjuriesList": [],
-        "awayInjuriesList": [],
-        "weatherFactor": 1.0
-      },
-      "odds": {
-        "home": 1.19,
-        "draw": 10.0,
-        "away": 20.0,
-        "over25": 1.29,
-        "under25": 3.55,
-        "btts_yes": 0,
-        "btts_no": 0,
-        "pinnacle_home": 1.16,
-        "pinnacle_draw": 8.91,
-        "pinnacle_away": 16.09
-      }
-    },
-    {
-      "id": "3ee2bf8a6fa6add543f64ac3e9813976",
-      "league": "UEFA Europa League",
-      "date": "2026-11-26T17:45:00Z",
-      "homeTeam": "Union Saint-Gilloise",
-      "awayTeam": "Lech Poznań",
-      "stats": {
-        "homeGoalsFor": 2.31,
-        "homeGoalsAgainst": 0.76,
-        "homeXG": 2.31,
-        "homeXGA": 0.76,
-        "awayGoalsFor": 0.76,
-        "awayGoalsAgainst": 2.65,
-        "awayXG": 0.76,
-        "awayXGA": 2.65,
-        "leagueAvgHome": 1.62,
-        "leagueAvgAway": 1.24
-      },
-      "context": {
-        "homeElo": 1758,
-        "awayElo": 1296,
-        "homeForm": "DDDDD",
-        "awayForm": "DDDDD",
-        "homeFormScore": 0.5,
-        "awayFormScore": 0.5,
-        "homeRestDays": 5,
-        "awayRestDays": 5,
-        "homeInjuryImpact": 0.0,
-        "awayInjuryImpact": 0.0,
-        "homeInjuriesList": [],
-        "awayInjuriesList": [],
-        "weatherFactor": 1.0
-      },
-      "odds": {
-        "home": 1.37,
-        "draw": 5.8,
-        "away": 9.0,
-        "over25": 1.44,
-        "under25": 2.75,
-        "btts_yes": 0,
-        "btts_no": 0,
-        "pinnacle_home": 1.37,
-        "pinnacle_draw": 5.53,
-        "pinnacle_away": 7.5
-      }
-    },
-    {
-      "id": "707c513bfa43b45b7813126e09ad08d8",
-      "league": "UEFA Europa League",
-      "date": "2026-11-26T17:45:00Z",
-      "homeTeam": "Marseille",
-      "awayTeam": "PFC Levski Sofia",
-      "stats": {
-        "homeGoalsFor": 0.96,
-        "homeGoalsAgainst": 1.32,
-        "homeXG": 0.96,
-        "homeXGA": 1.32,
-        "awayGoalsFor": 1.04,
-        "awayGoalsAgainst": 1.13,
-        "awayXG": 1.04,
-        "awayXGA": 1.13,
-        "leagueAvgHome": 1.62,
-        "leagueAvgAway": 1.24
-      },
-      "context": {
-        "homeElo": 1421,
-        "awayElo": 1592,
-        "homeForm": "DDDDD",
-        "awayForm": "DDDDD",
-        "homeFormScore": 0.5,
-        "awayFormScore": 0.5,
-        "homeRestDays": 5,
-        "awayRestDays": 5,
-        "homeInjuryImpact": 0.0,
-        "awayInjuryImpact": 0.0,
-        "homeInjuriesList": [],
-        "awayInjuriesList": [],
-        "weatherFactor": 1.0
-      },
-      "odds": {
-        "home": 1.38,
-        "draw": 5.8,
-        "away": 9.8,
-        "over25": 1.63,
-        "under25": 2.4,
-        "btts_yes": 0,
-        "btts_no": 0,
-        "pinnacle_home": 1.33,
-        "pinnacle_draw": 5.62,
-        "pinnacle_away": 8.94
-      }
-    },
     {
       "id": "189401357a4b5e5920ca9ec1207a6566",
       "league": "UEFA Europa League",
@@ -404,16 +36,16 @@
         "weatherFactor": 1.0
       },
       "odds": {
-        "home": 3.1,
-        "draw": 3.75,
-        "away": 2.4,
-        "over25": 1.69,
-        "under25": 2.27,
+        "home": 2.82,
+        "draw": 3.7,
+        "away": 2.72,
+        "over25": 1.8,
+        "under25": 2.25,
         "btts_yes": 0,
         "btts_no": 0,
-        "pinnacle_home": 3.0,
-        "pinnacle_draw": 3.74,
-        "pinnacle_away": 2.3
+        "pinnacle_home": 2.7,
+        "pinnacle_draw": 3.49,
+        "pinnacle_away": 2.68
       }
     },
     {
@@ -450,16 +82,16 @@
         "weatherFactor": 1.0
       },
       "odds": {
-        "home": 4.6,
+        "home": 5.1,
         "draw": 4.0,
-        "away": 1.85,
-        "over25": 1.73,
-        "under25": 2.21,
+        "away": 1.83,
+        "over25": 1.82,
+        "under25": 2.16,
         "btts_yes": 0,
         "btts_no": 0,
-        "pinnacle_home": 4.5,
-        "pinnacle_draw": 3.86,
-        "pinnacle_away": 1.79
+        "pinnacle_home": 4.89,
+        "pinnacle_draw": 3.83,
+        "pinnacle_away": 1.76
       }
     },
     {
@@ -496,16 +128,16 @@
         "weatherFactor": 1.0
       },
       "odds": {
-        "home": 5.2,
-        "draw": 4.5,
-        "away": 1.73,
-        "over25": 1.56,
-        "under25": 2.45,
+        "home": 4.9,
+        "draw": 4.6,
+        "away": 1.77,
+        "over25": 1.48,
+        "under25": 2.65,
         "btts_yes": 0,
         "btts_no": 0,
-        "pinnacle_home": 5.0,
-        "pinnacle_draw": 4.29,
-        "pinnacle_away": 1.65
+        "pinnacle_home": 4.57,
+        "pinnacle_draw": 4.37,
+        "pinnacle_away": 1.71
       }
     },
     {
@@ -542,16 +174,16 @@
         "weatherFactor": 1.0
       },
       "odds": {
-        "home": 2.16,
-        "draw": 4.06,
-        "away": 3.45,
-        "over25": 1.61,
-        "under25": 2.48,
+        "home": 1.99,
+        "draw": 4.2,
+        "away": 3.75,
+        "over25": 1.53,
+        "under25": 2.5,
         "btts_yes": 0,
         "btts_no": 0,
-        "pinnacle_home": 2.08,
-        "pinnacle_draw": 4.06,
-        "pinnacle_away": 3.29
+        "pinnacle_home": 1.95,
+        "pinnacle_draw": 4.07,
+        "pinnacle_away": 3.64
       }
     },
     {
@@ -588,16 +220,16 @@
         "weatherFactor": 1.0
       },
       "odds": {
-        "home": 1.38,
+        "home": 1.41,
         "draw": 5.7,
-        "away": 8.8,
-        "over25": 1.52,
-        "under25": 2.48,
+        "away": 9.0,
+        "over25": 1.44,
+        "under25": 2.8,
         "btts_yes": 0,
         "btts_no": 0,
-        "pinnacle_home": 1.36,
-        "pinnacle_draw": 5.47,
-        "pinnacle_away": 7.96
+        "pinnacle_home": 1.38,
+        "pinnacle_draw": 5.61,
+        "pinnacle_away": 7.63
       }
     },
     {
@@ -634,16 +266,16 @@
         "weatherFactor": 1.0
       },
       "odds": {
-        "home": 1.28,
-        "draw": 6.6,
-        "away": 14.0,
-        "over25": 1.52,
-        "under25": 2.42,
+        "home": 1.3,
+        "draw": 6.4,
+        "away": 13.5,
+        "over25": 1.65,
+        "under25": 2.43,
         "btts_yes": 0,
         "btts_no": 0,
-        "pinnacle_home": 1.26,
-        "pinnacle_draw": 6.2,
-        "pinnacle_away": 11.57
+        "pinnacle_home": 1.28,
+        "pinnacle_draw": 6.0,
+        "pinnacle_away": 11.71
       }
     },
     {
@@ -681,15 +313,15 @@
       },
       "odds": {
         "home": 1.22,
-        "draw": 8.8,
-        "away": 17.5,
-        "over25": 1.39,
-        "under25": 2.95,
+        "draw": 7.8,
+        "away": 17.0,
+        "over25": 1.57,
+        "under25": 2.5,
         "btts_yes": 0,
         "btts_no": 0,
-        "pinnacle_home": 1.17,
-        "pinnacle_draw": 8.33,
-        "pinnacle_away": 15.56
+        "pinnacle_home": 1.2,
+        "pinnacle_draw": 7.56,
+        "pinnacle_away": 15.38
       }
     },
     {
@@ -726,16 +358,16 @@
         "weatherFactor": 1.0
       },
       "odds": {
-        "home": 1.25,
-        "draw": 8.0,
-        "away": 14.0,
-        "over25": 1.37,
-        "under25": 3.05,
+        "home": 1.27,
+        "draw": 7.0,
+        "away": 13.0,
+        "over25": 1.5,
+        "under25": 2.75,
         "btts_yes": 0,
         "btts_no": 0,
-        "pinnacle_home": 1.21,
-        "pinnacle_draw": 7.41,
-        "pinnacle_away": 12.53
+        "pinnacle_home": 1.27,
+        "pinnacle_draw": 6.53,
+        "pinnacle_away": 10.99
       }
     },
     {
@@ -773,15 +405,15 @@
       },
       "odds": {
         "home": 3.25,
-        "draw": 4.03,
-        "away": 2.18,
-        "over25": 1.56,
-        "under25": 2.58,
+        "draw": 4.0,
+        "away": 2.22,
+        "over25": 1.46,
+        "under25": 2.78,
         "btts_yes": 0,
         "btts_no": 0,
-        "pinnacle_home": 3.17,
-        "pinnacle_draw": 4.03,
-        "pinnacle_away": 2.11
+        "pinnacle_home": 3.14,
+        "pinnacle_draw": 3.98,
+        "pinnacle_away": 2.17
       }
     },
     {
@@ -818,16 +450,16 @@
         "weatherFactor": 1.0
       },
       "odds": {
-        "home": 1.35,
-        "draw": 6.4,
-        "away": 9.0,
-        "over25": 1.37,
-        "under25": 3.05,
+        "home": 1.31,
+        "draw": 7.0,
+        "away": 11.0,
+        "over25": 1.3,
+        "under25": 3.51,
         "btts_yes": 0,
         "btts_no": 0,
-        "pinnacle_home": 1.34,
-        "pinnacle_draw": 6.01,
-        "pinnacle_away": 7.76
+        "pinnacle_home": 1.28,
+        "pinnacle_draw": 6.6,
+        "pinnacle_away": 9.52
       }
     },
     {
@@ -864,16 +496,16 @@
         "weatherFactor": 1.0
       },
       "odds": {
-        "home": 1.38,
-        "draw": 5.4,
-        "away": 9.8,
-        "over25": 1.74,
-        "under25": 2.26,
+        "home": 1.4,
+        "draw": 5.1,
+        "away": 10.0,
+        "over25": 2.02,
+        "under25": 1.95,
         "btts_yes": 0,
         "btts_no": 0,
-        "pinnacle_home": 1.35,
-        "pinnacle_draw": 5.29,
-        "pinnacle_away": 9.13
+        "pinnacle_home": 1.37,
+        "pinnacle_draw": 4.86,
+        "pinnacle_away": 9.11
       }
     },
     {
@@ -911,15 +543,15 @@
       },
       "odds": {
         "home": 1.77,
-        "draw": 4.5,
-        "away": 4.52,
-        "over25": 1.47,
-        "under25": 2.65,
+        "draw": 4.46,
+        "away": 4.8,
+        "over25": 1.52,
+        "under25": 2.62,
         "btts_yes": 0,
         "btts_no": 0,
-        "pinnacle_home": 1.73,
-        "pinnacle_draw": 4.47,
-        "pinnacle_away": 4.33
+        "pinnacle_home": 1.72,
+        "pinnacle_draw": 4.43,
+        "pinnacle_away": 4.42
       }
     },
     {
@@ -956,16 +588,16 @@
         "weatherFactor": 1.0
       },
       "odds": {
-        "home": 3.65,
-        "draw": 3.58,
-        "away": 2.28,
-        "over25": 2.14,
-        "under25": 1.91,
+        "home": 3.55,
+        "draw": 3.55,
+        "away": 2.36,
+        "over25": 2.18,
+        "under25": 1.83,
         "btts_yes": 0,
         "btts_no": 0,
-        "pinnacle_home": 3.52,
-        "pinnacle_draw": 3.33,
-        "pinnacle_away": 2.24
+        "pinnacle_home": 3.49,
+        "pinnacle_draw": 3.28,
+        "pinnacle_away": 2.28
       }
     },
     {
@@ -1002,16 +634,16 @@
         "weatherFactor": 1.0
       },
       "odds": {
-        "home": 2.63,
-        "draw": 3.73,
-        "away": 2.9,
-        "over25": 1.82,
-        "under25": 2.18,
+        "home": 2.62,
+        "draw": 3.68,
+        "away": 2.92,
+        "over25": 1.89,
+        "under25": 2.12,
         "btts_yes": 0,
         "btts_no": 0,
-        "pinnacle_home": 2.58,
-        "pinnacle_draw": 3.43,
-        "pinnacle_away": 2.85
+        "pinnacle_home": 2.55,
+        "pinnacle_draw": 3.41,
+        "pinnacle_away": 2.9
       }
     },
     {
@@ -1048,16 +680,16 @@
         "weatherFactor": 1.0
       },
       "odds": {
-        "home": 2.19,
-        "draw": 4.1,
-        "away": 3.35,
-        "over25": 1.46,
-        "under25": 2.68,
+        "home": 2.1,
+        "draw": 4.11,
+        "away": 3.55,
+        "over25": 1.42,
+        "under25": 2.91,
         "btts_yes": 0,
         "btts_no": 0,
-        "pinnacle_home": 2.09,
-        "pinnacle_draw": 4.07,
-        "pinnacle_away": 3.27
+        "pinnacle_home": 2.03,
+        "pinnacle_draw": 4.11,
+        "pinnacle_away": 3.39
       }
     },
     {
@@ -1094,16 +726,16 @@
         "weatherFactor": 1.0
       },
       "odds": {
-        "home": 2.12,
+        "home": 2.14,
         "draw": 3.75,
-        "away": 3.5,
-        "over25": 1.77,
+        "away": 3.45,
+        "over25": 1.76,
         "under25": 2.16,
         "btts_yes": 0,
         "btts_no": 0,
-        "pinnacle_home": 2.08,
-        "pinnacle_draw": 3.68,
-        "pinnacle_away": 3.41
+        "pinnacle_home": 2.06,
+        "pinnacle_draw": 3.64,
+        "pinnacle_away": 3.37
       }
     },
     {
@@ -1140,16 +772,16 @@
         "weatherFactor": 1.0
       },
       "odds": {
-        "home": 1.66,
-        "draw": 4.7,
-        "away": 6.0,
+        "home": 1.65,
+        "draw": 4.6,
+        "away": 5.75,
         "over25": 1.62,
-        "under25": 2.52,
+        "under25": 2.54,
         "btts_yes": 0,
         "btts_no": 0,
         "pinnacle_home": 1.62,
-        "pinnacle_draw": 4.39,
-        "pinnacle_away": 5.24
+        "pinnacle_draw": 4.4,
+        "pinnacle_away": 5.26
       }
     },
     {
@@ -1187,10 +819,10 @@
       },
       "odds": {
         "home": 1.53,
-        "draw": 5.21,
+        "draw": 5.25,
         "away": 6.4,
-        "over25": 1.38,
-        "under25": 3.0,
+        "over25": 1.39,
+        "under25": 3.05,
         "btts_yes": 0,
         "btts_no": 0,
         "pinnacle_home": 1.51,
@@ -1232,11 +864,11 @@
         "weatherFactor": 1.0
       },
       "odds": {
-        "home": 2.05,
+        "home": 2.04,
         "draw": 4.08,
         "away": 3.7,
-        "over25": 1.57,
-        "under25": 2.38,
+        "over25": 1.59,
+        "under25": 2.4,
         "btts_yes": 0,
         "btts_no": 0,
         "pinnacle_home": 2.02,
@@ -1278,11 +910,11 @@
         "weatherFactor": 1.0
       },
       "odds": {
-        "home": 10.7,
+        "home": 11.0,
         "draw": 7.5,
         "away": 1.29,
-        "over25": 1.3,
-        "under25": 3.75,
+        "over25": 1.31,
+        "under25": 3.51,
         "btts_yes": 0,
         "btts_no": 0,
         "pinnacle_home": 9.95,
@@ -1327,8 +959,8 @@
         "home": 2.56,
         "draw": 3.73,
         "away": 2.95,
-        "over25": 1.84,
-        "under25": 2.14,
+        "over25": 1.85,
+        "under25": 2.12,
         "btts_yes": 0,
         "btts_no": 0,
         "pinnacle_home": 2.53,
@@ -1371,7 +1003,7 @@
       },
       "odds": {
         "home": 1.55,
-        "draw": 4.9,
+        "draw": 4.83,
         "away": 6.75,
         "over25": 1.55,
         "under25": 2.5,
@@ -1380,6 +1012,374 @@
         "pinnacle_home": 1.51,
         "pinnacle_draw": 4.82,
         "pinnacle_away": 6.14
+      }
+    },
+    {
+      "id": "ab87184803a63f7b679f1d12b01c3271",
+      "league": "Premier League",
+      "date": "2026-11-28T15:00:00Z",
+      "homeTeam": "Manchester United",
+      "awayTeam": "Brentford",
+      "stats": {
+        "homeGoalsFor": 1.65,
+        "homeGoalsAgainst": 2.03,
+        "homeXG": 1.65,
+        "homeXGA": 2.03,
+        "awayGoalsFor": 1.37,
+        "awayGoalsAgainst": 1.45,
+        "awayXG": 1.37,
+        "awayXGA": 1.45,
+        "leagueAvgHome": 1.62,
+        "leagueAvgAway": 1.32
+      },
+      "context": {
+        "homeElo": 1427,
+        "awayElo": 1595,
+        "homeForm": "DLLDL",
+        "awayForm": "LDWLW",
+        "homeFormScore": 0.13,
+        "awayFormScore": 0.47,
+        "homeRestDays": 5,
+        "awayRestDays": 4,
+        "homeInjuryImpact": 0.0,
+        "awayInjuryImpact": 0.0,
+        "homeInjuriesList": [],
+        "awayInjuriesList": [],
+        "weatherFactor": 1.0
+      },
+      "odds": {
+        "home": 2.22,
+        "draw": 4.0,
+        "away": 3.4,
+        "over25": 1.57,
+        "under25": 2.5,
+        "btts_yes": 0,
+        "btts_no": 0,
+        "pinnacle_home": 2.13,
+        "pinnacle_draw": 3.86,
+        "pinnacle_away": 3.32
+      }
+    },
+    {
+      "id": "0bc17a3c7d8153e72b94688960cc603a",
+      "league": "Premier League",
+      "date": "2026-11-28T15:00:00Z",
+      "homeTeam": "Leeds United",
+      "awayTeam": "Coventry City",
+      "stats": {
+        "homeGoalsFor": 1.42,
+        "homeGoalsAgainst": 0.87,
+        "homeXG": 1.42,
+        "homeXGA": 0.87,
+        "awayGoalsFor": 1.09,
+        "awayGoalsAgainst": 1.89,
+        "awayXG": 1.09,
+        "awayXGA": 1.89,
+        "leagueAvgHome": 1.62,
+        "leagueAvgAway": 1.32
+      },
+      "context": {
+        "homeElo": 1578,
+        "awayElo": 1473,
+        "homeForm": "DDLWW",
+        "awayForm": "LLWLW",
+        "homeFormScore": 0.53,
+        "awayFormScore": 0.4,
+        "homeRestDays": 7,
+        "awayRestDays": 7,
+        "homeInjuryImpact": 0.0,
+        "awayInjuryImpact": 0.0,
+        "homeInjuriesList": [],
+        "awayInjuriesList": [],
+        "weatherFactor": 1.0
+      },
+      "odds": {
+        "home": 1.53,
+        "draw": 4.8,
+        "away": 7.2,
+        "over25": 1.75,
+        "under25": 2.3,
+        "btts_yes": 0,
+        "btts_no": 0,
+        "pinnacle_home": 1.5,
+        "pinnacle_draw": 4.65,
+        "pinnacle_away": 6.6
+      }
+    },
+    {
+      "id": "33d92dabbd2606dfe9d31058f7b20cc8",
+      "league": "LaLiga",
+      "date": "2026-11-28T15:15:00Z",
+      "homeTeam": "Málaga",
+      "awayTeam": "Athletic Bilbao",
+      "stats": {
+        "homeGoalsFor": 1.1,
+        "homeGoalsAgainst": 1.77,
+        "homeXG": 1.1,
+        "homeXGA": 1.77,
+        "awayGoalsFor": 1.03,
+        "awayGoalsAgainst": 1.23,
+        "awayXG": 1.03,
+        "awayXGA": 1.23,
+        "leagueAvgHome": 1.48,
+        "leagueAvgAway": 1.12
+      },
+      "context": {
+        "homeElo": 1372,
+        "awayElo": 1545,
+        "homeForm": "LDLLL",
+        "awayForm": "LWWDL",
+        "homeFormScore": 0.07,
+        "awayFormScore": 0.47,
+        "homeRestDays": 5,
+        "awayRestDays": 7,
+        "homeInjuryImpact": 0.0,
+        "awayInjuryImpact": 0.0,
+        "homeInjuriesList": [],
+        "awayInjuriesList": [],
+        "weatherFactor": 1.0
+      },
+      "odds": {
+        "home": 5.2,
+        "draw": 4.0,
+        "away": 1.77,
+        "over25": 1.92,
+        "under25": 2.06,
+        "btts_yes": 0,
+        "btts_no": 0,
+        "pinnacle_home": 4.91,
+        "pinnacle_draw": 3.9,
+        "pinnacle_away": 1.75
+      }
+    },
+    {
+      "id": "aec86b479e922f437ba228b9a9d74da1",
+      "league": "Serie A",
+      "date": "2026-11-28T17:00:00Z",
+      "homeTeam": "Torino",
+      "awayTeam": "Lazio",
+      "stats": {
+        "homeGoalsFor": 1.35,
+        "homeGoalsAgainst": 1.53,
+        "homeXG": 1.35,
+        "homeXGA": 1.53,
+        "awayGoalsFor": 2.15,
+        "awayGoalsAgainst": 0.98,
+        "awayXG": 2.15,
+        "awayXGA": 0.98,
+        "leagueAvgHome": 1.45,
+        "leagueAvgAway": 1.15
+      },
+      "context": {
+        "homeElo": 1503,
+        "awayElo": 1758,
+        "homeForm": "WLLDL",
+        "awayForm": "WWWDW",
+        "homeFormScore": 0.27,
+        "awayFormScore": 0.87,
+        "homeRestDays": 6,
+        "awayRestDays": 7,
+        "homeInjuryImpact": 0.0,
+        "awayInjuryImpact": 0.0,
+        "homeInjuriesList": [],
+        "awayInjuriesList": [],
+        "weatherFactor": 1.0
+      },
+      "odds": {
+        "home": 3.7,
+        "draw": 3.71,
+        "away": 2.22,
+        "over25": 1.95,
+        "under25": 2.0,
+        "btts_yes": 0,
+        "btts_no": 0,
+        "pinnacle_home": 3.62,
+        "pinnacle_draw": 3.5,
+        "pinnacle_away": 2.13
+      }
+    },
+    {
+      "id": "9d23f6ad21946dd258869ebc22236cf0",
+      "league": "Premier League",
+      "date": "2026-11-28T17:30:00Z",
+      "homeTeam": "Ipswich Town",
+      "awayTeam": "Aston Villa",
+      "stats": {
+        "homeGoalsFor": 1.35,
+        "homeGoalsAgainst": 1.54,
+        "homeXG": 1.35,
+        "homeXGA": 1.54,
+        "awayGoalsFor": 1.59,
+        "awayGoalsAgainst": 1.77,
+        "awayXG": 1.59,
+        "awayXGA": 1.77,
+        "leagueAvgHome": 1.62,
+        "leagueAvgAway": 1.32
+      },
+      "context": {
+        "homeElo": 1466,
+        "awayElo": 1514,
+        "homeForm": "LDDLL",
+        "awayForm": "WWDDD",
+        "homeFormScore": 0.13,
+        "awayFormScore": 0.6,
+        "homeRestDays": 7,
+        "awayRestDays": 7,
+        "homeInjuryImpact": 0.0,
+        "awayInjuryImpact": 0.0,
+        "homeInjuriesList": [],
+        "awayInjuriesList": [],
+        "weatherFactor": 1.0
+      },
+      "odds": {
+        "home": 3.85,
+        "draw": 4.16,
+        "away": 2.02,
+        "over25": 1.55,
+        "under25": 2.51,
+        "btts_yes": 0,
+        "btts_no": 0,
+        "pinnacle_home": 3.72,
+        "pinnacle_draw": 3.95,
+        "pinnacle_away": 1.96
+      }
+    },
+    {
+      "id": "40236ab976955345ebd1edb72abf6b22",
+      "league": "LaLiga",
+      "date": "2026-11-28T17:30:00Z",
+      "homeTeam": "Elche CF",
+      "awayTeam": "Atlético Madrid",
+      "stats": {
+        "homeGoalsFor": 0.96,
+        "homeGoalsAgainst": 1.58,
+        "homeXG": 0.96,
+        "homeXGA": 1.58,
+        "awayGoalsFor": 1.79,
+        "awayGoalsAgainst": 0.83,
+        "awayXG": 1.79,
+        "awayXGA": 0.83,
+        "leagueAvgHome": 1.48,
+        "leagueAvgAway": 1.12
+      },
+      "context": {
+        "homeElo": 1457,
+        "awayElo": 1710,
+        "homeForm": "DWLLD",
+        "awayForm": "WWWLW",
+        "homeFormScore": 0.33,
+        "awayFormScore": 0.8,
+        "homeRestDays": 4,
+        "awayRestDays": 5,
+        "homeInjuryImpact": 0.0,
+        "awayInjuryImpact": 0.0,
+        "homeInjuriesList": [],
+        "awayInjuriesList": [],
+        "weatherFactor": 1.0
+      },
+      "odds": {
+        "home": 7.2,
+        "draw": 5.1,
+        "away": 1.52,
+        "over25": 1.63,
+        "under25": 2.52,
+        "btts_yes": 0,
+        "btts_no": 0,
+        "pinnacle_home": 6.44,
+        "pinnacle_draw": 4.86,
+        "pinnacle_away": 1.48
+      }
+    },
+    {
+      "id": "5d838190a8f5932d7fcfbcc26bacdd9c",
+      "league": "Bundesliga",
+      "date": "2026-11-28T17:30:00Z",
+      "homeTeam": "VfB Stuttgart",
+      "awayTeam": "Eintracht Frankfurt",
+      "stats": {
+        "homeGoalsFor": 1.61,
+        "homeGoalsAgainst": 1.31,
+        "homeXG": 1.61,
+        "homeXGA": 1.31,
+        "awayGoalsFor": 1.46,
+        "awayGoalsAgainst": 2.08,
+        "awayXG": 1.46,
+        "awayXGA": 2.08,
+        "leagueAvgHome": 1.75,
+        "leagueAvgAway": 1.38
+      },
+      "context": {
+        "homeElo": 1530,
+        "awayElo": 1534,
+        "homeForm": "LLWWD",
+        "awayForm": "WLWDW",
+        "homeFormScore": 0.47,
+        "awayFormScore": 0.67,
+        "homeRestDays": 7,
+        "awayRestDays": 7,
+        "homeInjuryImpact": 0.0,
+        "awayInjuryImpact": 0.0,
+        "homeInjuriesList": [],
+        "awayInjuriesList": [],
+        "weatherFactor": 1.0
+      },
+      "odds": {
+        "home": 1.84,
+        "draw": 4.76,
+        "away": 4.16,
+        "over25": 1.27,
+        "under25": 3.82,
+        "btts_yes": 0,
+        "btts_no": 0,
+        "pinnacle_home": 1.78,
+        "pinnacle_draw": 4.76,
+        "pinnacle_away": 3.86
+      }
+    },
+    {
+      "id": "f128c19fa7af43e30dbe3c373e7bc27e",
+      "league": "Serie A",
+      "date": "2026-11-28T19:45:00Z",
+      "homeTeam": "Inter Milan",
+      "awayTeam": "Genoa",
+      "stats": {
+        "homeGoalsFor": 2.4,
+        "homeGoalsAgainst": 1.18,
+        "homeXG": 2.4,
+        "homeXGA": 1.18,
+        "awayGoalsFor": 1.2,
+        "awayGoalsAgainst": 1.22,
+        "awayXG": 1.2,
+        "awayXGA": 1.22,
+        "leagueAvgHome": 1.45,
+        "leagueAvgAway": 1.15
+      },
+      "context": {
+        "homeElo": 1714,
+        "awayElo": 1522,
+        "homeForm": "WWLWD",
+        "awayForm": "WWWLW",
+        "homeFormScore": 0.67,
+        "awayFormScore": 0.8,
+        "homeRestDays": 6,
+        "awayRestDays": 6,
+        "homeInjuryImpact": 0.0,
+        "awayInjuryImpact": 0.0,
+        "homeInjuriesList": [],
+        "awayInjuriesList": [],
+        "weatherFactor": 1.0
+      },
+      "odds": {
+        "home": 1.35,
+        "draw": 6.01,
+        "away": 11.5,
+        "over25": 1.6,
+        "under25": 2.56,
+        "btts_yes": 0,
+        "btts_no": 0,
+        "pinnacle_home": 1.31,
+        "pinnacle_draw": 6.01,
+        "pinnacle_away": 9.59
       }
     }
   ]
